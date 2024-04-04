@@ -20,16 +20,16 @@ if [ ! -e firmware ]; then
 	git clone https://github.com/openipc/firmware --depth=1
 fi
 
-if [ "$1" = "aio-goke" ]; then
+if [ "$1" = "osd-goke" ]; then
 	DRV=$PWD/firmware/general/package/goke-osdrv-gk7205v200/files/lib
-	make -C aio -B CC=$GCC DRV=$DRV $1
-elif [ "$1" = "aio-hisi" ]; then
+	make -C osd -B CC=$GCC DRV=$DRV $1
+elif [ "$1" = "osd-hisi" ]; then
 	DRV=$PWD/firmware/general/package/hisilicon-osdrv-hi3516ev200/files/lib
-	make -C aio -B CC=$GCC DRV=$DRV $1
-elif [ "$1" = "aio-sst6" ]; then
+	make -C osd -B CC=$GCC DRV=$DRV $1
+elif [ "$1" = "osd-sst6" ]; then
 	DRV=$PWD/firmware/general/package/sigmastar-osdrv-infinity6e/files/lib
-	make -C aio -B CC=$GCC DRV=$DRV $1
+	make -C osd -B CC=$GCC DRV=$DRV $1
 else
-	echo "Usage: $0 [aio-goke|aio-hisi|aio-sst6]"
+	echo "Usage: $0 [osd-goke|osd-hisi|osd-sst6]"
 	exit 1
 fi
