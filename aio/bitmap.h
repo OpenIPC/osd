@@ -93,7 +93,7 @@ extern "C"
         int blen;
     } OSD_COMP_INFO;
 
-    int GetBmpInfo(const char *filename, OSD_BITMAPFILEHEADER *pBmpFileHeader, OSD_BITMAPINFO *pBmpInfo);
+    int parse_bitmap(const char *filename, OSD_BITMAPFILEHEADER *pBmpFileHeader, OSD_BITMAPINFO *pBmpInfo);
     int CreateSurfaceByBitMap(const char *pszFileName, OSD_SURFACE_S *pstSurface, unsigned char *pu8Virt);
 
 #ifdef __cplusplus

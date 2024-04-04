@@ -109,15 +109,14 @@ void overlays()
 
 void route()
 {
-    if (starts_with(uri, "/osd/") &&
-        uri[5] >= '0' && uri[5] <= (MAX_OSD - 1 + '0'))
+    if (starts_with(uri, "/api/osd/") &&
+        uri[9] >= '0' && uri[9] <= (MAX_OSD - 1 + '0'))
     {
-        char id = uri[5] - '0';
+        char id = uri[9] - '0';
         if (!empty(query))
         {
             char *remain;
-            char *input = strdup(query);
-            for (char *item; (item = extract_pair(&input));) {
+            for (char *item; (item = extract_pair(&query));) {
                 char *value = item;
                 char *key = extract_key(&value);
                 if (!strcmp(key, "font"))
@@ -140,7 +139,6 @@ void route()
                         osds[id].posy = result;
                 }
             }
-            free(input);
             osds[id].updt = 1;
         }
         printf(\
@@ -153,7 +151,7 @@ void route()
             id, osds[id].posx, osds[id].posy, osds[id].font, osds[id].size, osds[id].text);
         return;
     }
-    else if (!strcmp(uri, "/time"))
+    else if (!strcmp(uri, "/api/time"))
     {
         struct timespec t;
         if (!empty(query))

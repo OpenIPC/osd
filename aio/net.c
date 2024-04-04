@@ -115,7 +115,9 @@ char *extract_key(char **pair)
 
 char *extract_pair(char **input)
 {
-    return strsep(input, "&");
+    char *curr;
+    while (*input && (*input)[0] && !(curr = strsep(input, "&"))[0]);
+    return curr;
 }
 
 void start_server()
@@ -170,9 +172,8 @@ void respond(int n)
 
         fprintf(stderr, "\x1b[32m + [%s] %s\x1b[0m\n", method, uri);
 
-        if (query = strchr(uri, '?')) {
+        if (query = strchr(uri, '?'))
             *query++ = '\0';
-        }
         else
             query = uri - 1;
 

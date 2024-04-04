@@ -11,7 +11,7 @@ OSD_COMP_INFO s_OSDCompInfo[OSD_COLOR_FMT_BUTT] = {
     {8, 8, 8, 8}  /*ARGB8888*/
 };
 
-static inline unsigned short OSD_MAKECOLOR_U16(unsigned char r, unsigned char g, unsigned char b, OSD_COMP_INFO compinfo)
+static inline unsigned short convert_2bpp(unsigned char r, unsigned char g, unsigned char b, OSD_COMP_INFO compinfo)
 {
     unsigned short pixel = 0;
     unsigned int tmp = 15;
@@ -30,14 +30,14 @@ static inline unsigned short OSD_MAKECOLOR_U16(unsigned char r, unsigned char g,
     return pixel;
 }
 
-int GetBmpInfo(const char *filename, OSD_BITMAPFILEHEADER *pBmpFileHeader, OSD_BITMAPINFO *pBmpInfo)
+int parse_bitmap(const char *filename, OSD_BITMAPFILEHEADER *pBmpFileHeader, OSD_BITMAPINFO *pBmpInfo)
 {
     FILE *pFile;
     unsigned short bfType;
 
-    if (filename == NULL)
+    if (!filename)
     {
-        fprintf(stderr, "OSD_LoadBMP: filename=NULL\n");
+        fprintf(stderr, "load_bitmap: filename=NULL\n");
         return -1;
     }
 
@@ -75,11 +75,32 @@ int GetBmpInfo(const char *filename, OSD_BITMAPFILEHEADER *pBmpFileHeader, OSD_B
         return -1;
     }
 
+    if (pBmpInfo->bmiHeader.biBitCount / 8 < 2)
+    {
+        fprintf(stderr, "bitmap format not supported!\n");
+        fclose(pFile);
+        return -1;
+    }
+
+    if (pBmpInfo->bmiHeader.biCompression)
+    {
+        fprintf(stderr, "not support compressed bitmap file!\n");
+        fclose(pFile);
+        return -1;
+    }
+
+    if (pBmpInfo->bmiHeader.biHeight < 0)
+    {
+        fprintf(stderr, "bmpInfo.bmiHeader.biHeight < 0\n");
+        fclose(pFile);
+        return -1;
+    }
+
     fclose(pFile);
     return 0;
 }
 
-int LoadBMP(const char *filename, OSD_LOGO_T *pVideoLogo)
+int load_bitmap(const char *filename, OSD_LOGO_T *pVideoLogo)
 {
     FILE *pFile;
 
@@ -92,36 +113,10 @@ int LoadBMP(const char *filename, OSD_LOGO_T *pVideoLogo)
     unsigned char *pOrigBMPBuf;
     unsigned char *pRGBBuf;
 
-    if (filename == NULL)
-    {
-        fprintf(stderr, "OSD_LoadBMP: filename=NULL\n");
-        return -1;
-    }
-
-    if (GetBmpInfo(filename, &bmpFileHeader, &bmpInfo) < 0)
+    if (parse_bitmap(filename, &bmpFileHeader, &bmpInfo) < 0)
         return -1;
 
-    Bpp = bmpInfo.bmiHeader.biBitCount / 8;
-    if (Bpp < 2)
-    {
-        /* only support 1555.8888  888 bitmap */
-        fprintf(stderr, "bitmap format not supported!\n");
-        return -1;
-    }
-
-    if (bmpInfo.bmiHeader.biCompression != 0)
-    {
-        fprintf(stderr, "not support compressed bitmap file!\n");
-        return -1;
-    }
-
-    if (bmpInfo.bmiHeader.biHeight < 0)
-    {
-        fprintf(stderr, "bmpInfo.bmiHeader.biHeight < 0\n");
-        return -1;
-    }
-
-    if ((pFile = fopen(filename, "rb")) == NULL)
+    if (!(pFile = fopen(filename, "rb")))
     {
         fprintf(stderr, "Open file faild:%s!\n", filename);
         return -1;
@@ -132,13 +127,14 @@ int LoadBMP(const char *filename, OSD_LOGO_T *pVideoLogo)
     w = pVideoLogo->width;
     h = pVideoLogo->height;
 
+    Bpp = bmpInfo.bmiHeader.biBitCount / 8;
     stride = w * Bpp;
     if (stride % 4)
         stride = (stride & 0xfffc) + 4;
 
     /* RGB8888 or RGB1555 */
     pOrigBMPBuf = (unsigned char *)malloc(h * stride);
-    if (NULL == pOrigBMPBuf)
+    if (!pOrigBMPBuf)
     {
         fprintf(stderr, "not enough memory to malloc!\n");
         fclose(pFile);
@@ -155,9 +151,10 @@ int LoadBMP(const char *filename, OSD_LOGO_T *pVideoLogo)
         pOrigBMPBuf = NULL;
         return -1;
     }
+
     if (fread(pOrigBMPBuf, 1, (unsigned int)(h * stride), pFile) != (unsigned int)(h * stride))
     {
-        fprintf(stderr, "fread error!line:%d\n", __LINE__);
+        fprintf(stderr, "fread (%d*%d)error!line:%d\n", h, stride, __LINE__);
         perror("fread:");
     }
 
@@ -187,7 +184,7 @@ int LoadBMP(const char *filename, OSD_LOGO_T *pVideoLogo)
     return 0;
 }
 
-int LoadBMPEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
+int load_bitmapex(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
 {
     FILE *pFile;
 
@@ -203,36 +200,10 @@ int LoadBMPEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFm
     unsigned char *pStart;
     unsigned short *pDst;
 
-    if (filename == NULL)
-    {
-        fprintf(stderr, "OSD_LoadBMP: filename=NULL\n");
-        return -1;
-    }
-
-    if (GetBmpInfo(filename, &bmpFileHeader, &bmpInfo) < 0)
+    if (parse_bitmap(filename, &bmpFileHeader, &bmpInfo) < 0)
         return -1;
 
-    Bpp = bmpInfo.bmiHeader.biBitCount / 8;
-    if (Bpp < 2)
-    {
-        /* only support 1555.8888  888 bitmap */
-        fprintf(stderr, "bitmap format not supported!\n");
-        return -1;
-    }
-
-    if (bmpInfo.bmiHeader.biCompression != 0)
-    {
-        fprintf(stderr, "not support compressed bitmap file!\n");
-        return -1;
-    }
-
-    if (bmpInfo.bmiHeader.biHeight < 0)
-    {
-        fprintf(stderr, "bmpInfo.bmiHeader.biHeight < 0\n");
-        return -1;
-    }
-
-    if ((pFile = fopen(filename, "rb")) == NULL)
+    if (!(pFile = fopen(filename, "rb")))
     {
         fprintf(stderr, "Open file faild:%s!\n", filename);
         return -1;
@@ -243,13 +214,14 @@ int LoadBMPEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFm
     w = pVideoLogo->width;
     h = pVideoLogo->height;
 
+    Bpp = bmpInfo.bmiHeader.biBitCount / 8;
     stride = w * Bpp;
     if (stride % 4)
         stride = (stride & 0xfffc) + 4;
 
     /* RGB8888 or RGB1555 */
     pOrigBMPBuf = (unsigned char *)malloc(h * stride);
-    if (NULL == pOrigBMPBuf)
+    if (!pOrigBMPBuf)
     {
         fprintf(stderr, "not enough memory to malloc!\n");
         fclose(pFile);
@@ -297,7 +269,7 @@ int LoadBMPEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFm
                     r = *(pStart);
                     g = *(pStart + 1);
                     b = *(pStart + 2);
-                    *pDst = OSD_MAKECOLOR_U16(r, g, b, s_OSDCompInfo[enFmt]);
+                    *pDst = convert_2bpp(r, g, b, s_OSDCompInfo[enFmt]);
                     break;
 
                 case OSD_COLOR_FMT_RGB888:
@@ -325,7 +297,7 @@ int LoadBMPEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFm
     return 0;
 }
 
-int LoadBMPCanvas(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
+int load_bitmap_canvas(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
 {
     FILE *pFile;
 
@@ -341,43 +313,16 @@ int LoadBMPCanvas(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E 
     unsigned char *pStart;
     unsigned short *pDst;
 
-    if (filename == NULL)
-    {
-        fprintf(stderr, "OSD_LoadBMP: filename=NULL\n");
+    if (parse_bitmap(filename, &bmpFileHeader, &bmpInfo) < 0)
         return -1;
-    }
 
-    if (GetBmpInfo(filename, &bmpFileHeader, &bmpInfo) < 0)
-    {
-        return -1;
-    }
-
-    Bpp = bmpInfo.bmiHeader.biBitCount / 8;
-    if (Bpp < 2)
-    {
-        /* only support 1555.8888  888 bitmap */
-        fprintf(stderr, "bitmap format not supported!\n");
-        return -1;
-    }
-
-    if (bmpInfo.bmiHeader.biCompression != 0)
-    {
-        fprintf(stderr, "not support compressed bitmap file!\n");
-        return -1;
-    }
-
-    if (bmpInfo.bmiHeader.biHeight < 0)
-    {
-        fprintf(stderr, "bmpInfo.bmiHeader.biHeight < 0\n");
-        return -1;
-    }
-
-    if ((pFile = fopen(filename, "rb")) == NULL)
+    if (!(pFile = fopen(filename, "rb")))
     {
         fprintf(stderr, "Open file faild:%s!\n", filename);
         return -1;
     }
 
+    Bpp = bmpInfo.bmiHeader.biBitCount / 8;
     w = (unsigned short)bmpInfo.bmiHeader.biWidth;
     h = (unsigned short)((bmpInfo.bmiHeader.biHeight > 0) ? bmpInfo.bmiHeader.biHeight : (-bmpInfo.bmiHeader.biHeight));
 
@@ -387,7 +332,7 @@ int LoadBMPCanvas(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E 
 
     /* RGB8888 or RGB1555 */
     pOrigBMPBuf = (unsigned char *)malloc(h * stride);
-    if (NULL == pOrigBMPBuf)
+    if (!pOrigBMPBuf)
     {
         fprintf(stderr, "not enough memory to malloc!\n");
         fclose(pFile);
@@ -455,7 +400,7 @@ int LoadBMPCanvas(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E 
                     b = *(pStart + 2);
                     // fprintf(stderr, "Func: %s, line:%d, Bpp: %d, bmp stride: %d, Canvas stride: %d, h:%d, w:%d.\n",
                     //     __FUNCTION__, __LINE__, Bpp, stride, pVideoLogo->stride, i, j);
-                    *pDst = OSD_MAKECOLOR_U16(r, g, b, s_OSDCompInfo[enFmt]);
+                    *pDst = convert_2bpp(r, g, b, s_OSDCompInfo[enFmt]);
 
                     break;
 
@@ -484,11 +429,11 @@ int LoadBMPCanvas(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E 
     return 0;
 }
 
-char *GetExtName(char *filename)
+char *extract_extension(char *filename)
 {
     char *pret = NULL;
 
-    if (filename == NULL)
+    if (!filename)
     {
         fprintf(stderr, "filename can't be null!");
         return NULL;
@@ -506,15 +451,15 @@ char *GetExtName(char *filename)
     return pret;
 }
 
-int LoadImage(const char *filename, OSD_LOGO_T *pVideoLogo)
+int load_image(const char *filename, OSD_LOGO_T *pVideoLogo)
 {
-    char *ext = GetExtName((char *)filename);
+    char *ext = extract_extension((char *)filename);
 
-    if (ext != NULL && strcmp(ext, "bmp") == 0)
+    if (ext && !strcmp(ext, "bmp"))
     {
-        if (0 != LoadBMP(filename, pVideoLogo))
+        if (load_bitmap(filename, pVideoLogo))
         {
-            fprintf(stderr, "OSD_LoadBMP error!\n");
+            fprintf(stderr, "load_bitmap error!\n");
             return -1;
         }
     }
@@ -527,15 +472,15 @@ int LoadImage(const char *filename, OSD_LOGO_T *pVideoLogo)
     return 0;
 }
 
-int LoadImageEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
+int load_imageex(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
 {
-    char *ext = GetExtName((char *)filename);
+    char *ext = extract_extension((char*)filename);
 
-    if (ext != NULL && strcmp(ext, "bmp") == 0)
+    if (ext && !strcmp(ext, "bmp"))
     {
-        if (0 != LoadBMPEx(filename, pVideoLogo, enFmt))
+        if (load_bitmapex(filename, pVideoLogo, enFmt))
         {
-            fprintf(stderr, "OSD_LoadBMP error!\n");
+            fprintf(stderr, "load_bitmap error!\n");
             return -1;
         }
     }
@@ -548,15 +493,15 @@ int LoadImageEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E en
     return 0;
 }
 
-int LoadCanvasEx(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
+int load_canvasex(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E enFmt)
 {
-    char *ext = GetExtName((char *)filename);
+    char *ext = extract_extension((char *)filename);
 
-    if (ext != NULL && strcmp(ext, "bmp") == 0)
+    if (ext && !strcmp(ext, "bmp"))
     {
-        if (0 != LoadBMPCanvas(filename, pVideoLogo, enFmt))
+        if (load_bitmap_canvas(filename, pVideoLogo, enFmt))
         {
-            fprintf(stderr, "OSD_LoadBMP error!\n");
+            fprintf(stderr, "load_bitmap error!\n");
             return -1;
         }
     }
@@ -576,7 +521,7 @@ int LoadBitMap2Surface(const char *pszFileName, const OSD_SURFACE_S *pstSurface,
     stLogo.stride = pstSurface->u16Stride;
     stLogo.pRGBBuffer = pu8Virt;
 
-    return LoadImage(pszFileName, &stLogo);
+    return load_image(pszFileName, &stLogo);
 }
 
 int CreateSurfaceByBitMap(const char *pszFileName, OSD_SURFACE_S *pstSurface, unsigned char *pu8Virt)
@@ -585,7 +530,7 @@ int CreateSurfaceByBitMap(const char *pszFileName, OSD_SURFACE_S *pstSurface, un
 
     stLogo.pRGBBuffer = pu8Virt;
 
-    if (LoadImageEx(pszFileName, &stLogo, pstSurface->enColorFmt) < 0)
+    if (load_imageex(pszFileName, &stLogo, pstSurface->enColorFmt) < 0)
     {
         fprintf(stderr, "load bmp error!\n");
         return -1;
@@ -607,7 +552,7 @@ int CreateSurfaceByCanvas(const char *pszFileName, OSD_SURFACE_S *pstSurface, un
     stLogo.height = u32Height;
     stLogo.stride = u32Stride;
 
-    if (LoadCanvasEx(pszFileName, &stLogo, pstSurface->enColorFmt) < 0)
+    if (load_canvasex(pszFileName, &stLogo, pstSurface->enColorFmt) < 0)
     {
         fprintf(stderr, "load bmp error!\n");
         return -1;

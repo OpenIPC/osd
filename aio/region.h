@@ -12,6 +12,7 @@ extern "C"
 #include "bitmap.h"
 
     int create_region(int channel, int handle, int x, int y, int width, int height);
+    int load_region(unsigned int handle, int enPixelFmt);
 
 #ifdef __cplusplus
 #if __cplusplus

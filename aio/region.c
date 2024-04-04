@@ -28,7 +28,6 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
 
 #ifdef __SIGMASTAR__
     stChn.eModId = E_MI_RGN_MODID_VPE;
-    stChn.s32OutputPortId = 0;
 #else
     stChn.enModId = HI_ID_VENC;
 #endif
@@ -83,6 +82,9 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
         {
             fprintf(stderr, "[%s:%d] Region parameters are different, recreating ... \n", __func__, __LINE__);
 #ifdef __SIGMASTAR__
+            stChn.s32OutputPortId = 1;
+            MI_RGN_DetachFromChn(handle, &stChn);
+            stChn.s32OutputPortId = 0;
             MI_RGN_DetachFromChn(handle, &stChn);
             MI_RGN_Destroy(handle);
             s32Ret = MI_RGN_Create(handle, &stRegion);
@@ -114,6 +116,9 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
     {
         fprintf(stderr, "[%s:%d] Position has changed, detaching handle %d from channel %d...\n", __func__, __LINE__, s32Ret, handle, &stChn.s32ChnId);
 #ifdef __SIGMASTAR__
+        stChn.s32OutputPortId = 1;
+        MI_RGN_DetachFromChn(handle, &stChn);
+        stChn.s32OutputPortId = 0;
         MI_RGN_DetachFromChn(handle, &stChn);
 #else
         HI_MPI_RGN_DetachFromChn(handle, &stChn);
@@ -135,6 +140,7 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
     // stChnAttr.unPara.stOsdChnPort.stColorInvertAttr.u16WDivNum = stRegion.stOsdInitParam.stSize.u32Width * inv16;
     // stChnAttr.unPara.stOsdChnPort.stColorInvertAttr.u16HDivNum = stRegion.stOsdInitParam.stSize.u32Height * inv16;
 #else
+    memset(&stChnAttr, 0, sizeof(RGN_CHN_ATTR_S));
     stChnAttr.bShow = 1;
     stChnAttr.enType = OVERLAY_RGN;
     stChnAttr.unChnAttr.stOverlayChn.u32BgAlpha = 0;
@@ -142,11 +148,11 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
     stChnAttr.unChnAttr.stOverlayChn.stQpInfo.bQpDisable = 0;
     stChnAttr.unChnAttr.stOverlayChn.stQpInfo.bAbsQp = 0;
     stChnAttr.unChnAttr.stOverlayChn.stQpInfo.s32Qp = 0;
-    stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Height = width;
-    stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Width = height;
-    stChnAttr.unChnAttr.stOverlayChn.stInvertColor.u32LumThresh = 128;
-    stChnAttr.unChnAttr.stOverlayChn.stInvertColor.enChgMod = LESSTHAN_LUM_THRESH;
-    stChnAttr.unChnAttr.stOverlayChn.stInvertColor.bInvColEn = 0;
+    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Height = width;
+    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Width = height;
+    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.u32LumThresh = 128;
+    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.enChgMod = LESSTHAN_LUM_THRESH;
+    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.bInvColEn = 0;
 #ifndef __16CV300__
     stChnAttr.unChnAttr.stOverlayChn.u16ColorLUT[0] = 0x3e0;
     stChnAttr.unChnAttr.stOverlayChn.u16ColorLUT[1] = 0x7FFF;
@@ -158,6 +164,9 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
 #endif
 
 #ifdef __SIGMASTAR__
+    stChn.s32OutputPortId = 0;
+    MI_RGN_AttachToChn(handle, &stChn, &stChnAttr);
+    stChn.s32OutputPortId = 1;
     MI_RGN_AttachToChn(handle, &stChn, &stChnAttr);
 #else
     HI_MPI_RGN_AttachToChn(handle, &stChn, &stChnAttr);
@@ -166,7 +175,7 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
     return s32Ret;
 }
 
-int REGION_MST_LoadBmp(const char *filename, BITMAP *bitmap, int bFil, unsigned int u16FilColor, int enPixelFmt)
+int prepare_bitmap(const char *filename, BITMAP *bitmap, int bFil, unsigned int u16FilColor, int enPixelFmt)
 {
     OSD_SURFACE_S Surface;
     OSD_BITMAPFILEHEADER bmpFileHeader;
@@ -181,7 +190,7 @@ int REGION_MST_LoadBmp(const char *filename, BITMAP *bitmap, int bFil, unsigned 
     unsigned char Value;
     int s32Width;
 
-    if (GetBmpInfo(filename, &bmpFileHeader, &bmpInfo) < 0)
+    if (parse_bitmap(filename, &bmpFileHeader, &bmpInfo) < 0)
     {
         fprintf(stderr, "GetBmpInfo err!\n");
         return -1;
@@ -307,12 +316,12 @@ int set_bitmap(unsigned int handle, BITMAP *bitmap)
     return s32Ret;
 }
 
-int load_bitmap(unsigned int handle, int enPixelFmt)
+int load_region(unsigned int handle, int enPixelFmt)
 {
     BITMAP* bitmap;
     char path[32];
     sprintf(path, "/tmp/osd%d.bmp", handle);
-    REGION_MST_LoadBmp(path, bitmap, 0, 0, enPixelFmt);
+    prepare_bitmap(path, bitmap, 0, 0, enPixelFmt);
     
     int s32Ret = set_bitmap(handle, bitmap);
     if (s32Ret)
