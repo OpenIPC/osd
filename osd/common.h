@@ -17,7 +17,6 @@
 #include <sys/mman.h>
 #include <sys/socket.h>
 #include <sys/stat.h>
-#include <sys/sysinfo.h>
 #include <sys/types.h>
 
 #ifdef __cplusplus
@@ -90,6 +89,8 @@ extern "C"
     {
         short width, height;
     } RECT;
+
+    int sysinfo(struct sysinfo *);
 
     static void fatal(const char *message)
     {
