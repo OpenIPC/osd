@@ -14,6 +14,7 @@ Parameters for each region can be passed in one or many calls:
 curl "192.168.1.17:9000/api/osd/0?font=comic&size=32.0&text=Frontdoor"
 curl 192.168.1.17:9000/api/osd/0?posy=72
 ```
+N.B. Ampersands require the address to be enclosed with double quotes under Windows or to be escaped with a backslash under Unix OSes
 
 Supported fonts (sourced from /usr/share/fonts/truetype/) can render Unicode characters:
 ```
@@ -27,9 +28,9 @@ curl 192.168.1.17:9000/api/osd/1?text=
 
 Specifiers starting with a dollar sign are used to represent real-time statistics:
 ```
-curl "192.168.1.17:9000/api/osd/1?text=$B%20C:$C%20M:$M"
+curl 192.168.1.17:9000/api/osd/1?text=$B%20C:$C%20M:$M
 ```
-N.B. Spaces have to be escaped with %20 in URL syntaxes
+N.B. Spaces have to be escaped with %20 in curl URL syntaxes
 
 Showing the time and customizing the time format is done this way:
 ```

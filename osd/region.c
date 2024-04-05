@@ -2,7 +2,7 @@
 
 const double inv16 = 1.0 / 16.0;
 
-int create_region(int channel, int handle, int x, int y, int width, int height)
+int create_region(int handle, int x, int y, int width, int height)
 {
     int s32Ret;
 #ifdef __SIGMASTAR__
@@ -13,6 +13,8 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
 
     MI_RGN_ChnPortParam_t stChnAttr;
     MI_RGN_ChnPortParam_t stChnAttrCurrent;
+
+    stChn.eModId = E_MI_RGN_MODID_VPE;
 #else
     MPP_CHN_S stChn;
 
@@ -21,19 +23,11 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
 
     RGN_CHN_ATTR_S stChnAttr;
     RGN_CHN_ATTR_S stChnAttrCurrent;
-#endif
 
-    int enPixelFmt;
-    unsigned int au32BgColor[3] = {0xffffffff, 0x0000000, 1};
-
-#ifdef __SIGMASTAR__
-    stChn.eModId = E_MI_RGN_MODID_VPE;
-#else
     stChn.enModId = HI_ID_VENC;
 #endif
     stChn.s32DevId = 0;
-    stChn.s32ChnId = channel;
-
+    stChn.s32ChnId = 0;
 #ifdef __SIGMASTAR__
     stRegion.eType = E_MI_RGN_TYPE_OSD;
     stRegion.stOsdInitParam.stSize.u32Height = height;
@@ -45,13 +39,12 @@ int create_region(int channel, int handle, int x, int y, int width, int height)
     stRegion.unAttr.stOverlay.stSize.u32Width = width;
     stRegion.unAttr.stOverlay.u32CanvasNum = 2;
     stRegion.unAttr.stOverlay.enPixelFmt = PIXEL_FORMAT_1555;
-    stRegion.unAttr.stOverlay.u32BgColor = au32BgColor[1];
+    stRegion.unAttr.stOverlay.u32BgColor = (unsigned int[]){0xffffffff, 0x00000000, 1};
 #endif
 
 #ifdef __SIGMASTAR__
     // MI_RGN_DetachFromChn(handle, &stChn);
     // MI_RGN_Destroy(handle);
-    // memset(&stRegionCurrent, 0, sizeof(MI_RGN_Attr_t));
     s32Ret = MI_RGN_GetAttr(handle, &stRegionCurrent);
 #else
     // HI_MPI_RGN_DetachFromChn(HandleNum,&stChn);
@@ -324,8 +317,32 @@ int load_region(unsigned int handle, int enPixelFmt)
     prepare_bitmap(path, bitmap, 0, 0, enPixelFmt);
     
     int s32Ret = set_bitmap(handle, bitmap);
-    if (s32Ret)
-        fprintf(stderr, "load_bitmap failed!Handle:%d\n", handle);
     free(bitmap->pData);
     return s32Ret;
+}
+
+void unload_region(unsigned int handle)
+{
+#ifdef __SIGMASTAR__
+    MI_RGN_ChnPort_t stChn;
+#else
+    MPP_CHN_S stChn;
+#endif
+    stChn.s32DevId = 0;
+    stChn.s32ChnId = 0;
+#ifdef __SIGMASTAR__
+    stChn.eModId = E_MI_RGN_MODID_VPE;
+    stChn.s32OutputPortId = 1;
+    MI_RGN_DetachFromChn(handle, &stChn);
+    stChn.s32OutputPortId = 0;
+    MI_RGN_DetachFromChn(handle, &stChn);
+    int s32Ret = MI_RGN_Destroy(handle);
+#else
+    stChn.enModId = HI_ID_VENC;
+    HI_MPI_RGN_DetachFromChn(handle, &stChn);
+    int s32Ret = HI_MPI_RGN_Destroy(handle);
+#endif
+
+    if (s32Ret)
+        fprintf(stderr, "[%s:%d]RGN_Destroy failed with %#x %d!\n", __func__, __LINE__, s32Ret, handle);
 }
