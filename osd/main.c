@@ -10,7 +10,7 @@ struct osd *osds;
 
 static void fill(char* str)
 {
-    unsigned int rxb_l, txb_l;
+    unsigned int rxb_l, txb_l, cpu_l[6];
     char out[80] = "";
     char param = 0;
     int i = 0, j = 0;
@@ -46,6 +46,37 @@ static void fill(char* str)
             }
             
             freeifaddrs(ifaddr);
+        }
+        else if (str[i + 1] == 'C')
+        {
+            i++;
+            char tmp[6];
+            unsigned int cpu[6];
+            FILE *stat = fopen("/proc/stat", "r");
+            fscanf(stat, "%s %u %u %u %u %u %u",
+                tmp, &cpu[0], &cpu[1], &cpu[2], &cpu[3], &cpu[4], &cpu[5]);
+            fclose(stat);
+
+            char c[5];
+            char avg = 100 - (cpu[3] - cpu_l[3]) / sysconf(_SC_NPROCESSORS_ONLN);
+            sprintf(c, "%d%%", avg);
+            strcat(out, c);
+            j += strlen(c);
+            for (int i = 0; i < sizeof(cpu) / sizeof(cpu[0]); i++)
+                cpu_l[i] = cpu[i];
+        }
+        else if (str[i + 1] == 'M')
+        {
+            i++;
+            struct sysinfo si;
+            sysinfo(&si);
+
+            char m[16];
+            short used = (si.freeram + si.bufferram) / 1024 / 1024;
+            short total = si.totalram / 1024 / 1024;
+            sprintf(m, "%d/%dMB", used, total);
+            strcat(out, m);
+            j += strlen(m);
         }
         else if (str[i + 1] == 'T')
         {

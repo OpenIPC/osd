@@ -15,6 +15,7 @@ extern "C"
                 *query,   // "a=1&b=2"     things after  '?'
                 *prot,    // "HTTP/1.1"
                 *payload; // for POST
+    extern int payload_size;
 
     void serve_forever();
     char *extract_key(char **pair);
