@@ -20,6 +20,7 @@ extern "C"
     void serve_forever();
     char *extract_key(char **pair);
     char *extract_pair(char **input);
+    char *request_header(const char *name);
 
     void callback();
     void route();

@@ -20,14 +20,21 @@ Supported fonts (sourced from /usr/share/fonts/truetype/) can render Unicode cha
 curl 192.168.1.17:9000/api/osd/0?text=Entrée
 ```
 
-Specifiers starting with a dollar sign are used to represent real-time statistics:
-```
-curl "192.168.1.17:9000/api/osd/1?text=$B C:$C M:$M"
-```
-
 Empty strings are used to clear the regions:
 ```
-curl 192.168.1.17:9000/api/osd/2?text=
+curl 192.168.1.17:9000/api/osd/1?text=
+```
+
+Specifiers starting with a dollar sign are used to represent real-time statistics:
+```
+curl "192.168.1.17:9000/api/osd/1?text=$B%20C:$C%20M:$M"
+```
+N.B. Spaces have to be escaped with %20 in URL syntaxes
+
+Showing the time and customizing the time format is done this way:
+```
+curl 192.168.1.17:9000/api/time?fmt=%25Y/%25m/%25d%20%25H:%25M:%25S
+curl 192.168.1.17:9000/api/osd/2?text=$t&posy=120
 ```
 
 UTC date and time can be set using Unix timestamps:

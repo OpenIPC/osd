@@ -7,6 +7,7 @@
 
 void *io_map;
 struct osd *osds;
+char timefmt[32] = DEF_TIMEFMT;
 
 static void fill(char* str)
 {
@@ -77,6 +78,16 @@ static void fill(char* str)
             sprintf(m, "%d/%dMB", used, total);
             strcat(out, m);
             j += strlen(m);
+        }
+        else if (str[i + 1] == 't')
+        {
+            i++;
+            char s[64];
+            time_t t = time(NULL);
+            struct tm *tm = gmtime(&t);
+            strftime(s, 64, timefmt, tm);
+            strcat(out, s);
+            j += strlen(s);
         }
         else if (str[i + 1] == 'T')
         {
@@ -192,7 +203,9 @@ void route()
             for (char *item; (item = extract_pair(&input));) {
                 char *value = item;
                 char *key = extract_key(&value);
-                if (!strcmp(key, "ts")) {
+                if (!strcmp(key, "fmt"))
+                    strncpy(timefmt, value, 32);
+                else if (!strcmp(key, "ts")) {
                     long result = strtol(value, &remain, 10);
                     if (remain == value) continue;
                     t.tv_sec = result;
@@ -208,7 +221,7 @@ void route()
             "Connection: close\r\n" \
             "\r\n" \
         );
-        printf("{\"ts\":%d}", t.tv_sec);
+        printf("{\"fmt\":\"%s\",\"ts\":%d}", timefmt, t.tv_sec);
         return;
     }
 
