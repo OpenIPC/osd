@@ -151,21 +151,24 @@ void start_server()
         fatal("listen() error");
 }
 
-void respond(int n)
+void respond(int slot)
 {
     int rcvd;
+    int total = 0;
 
     buf = malloc(BUF_SIZE);
-    rcvd = recv(clients[n], buf, BUF_SIZE, 0);
+
+    rcvd = recv(clients[slot], buf + total, BUF_SIZE - total, 0);
 
     if (rcvd < 0)
-        fprintf(stderr, ("recv() error\n"));
+        goto finish;
     else if (rcvd == 0)
-        fprintf(stderr, "Client disconnected upexpectedly.\n");
-    else
-    {
-        buf[rcvd] = '\0';
+        fputs("Client disconnected unexpectedly.\n", stderr);
 
+    total += rcvd;
+
+    if (total > 0)
+    {
         method = strtok(buf, " \t\r\n");
         uri = strtok(NULL, " \t");
         prot = strtok(NULL, " \t\r\n");
@@ -181,7 +184,7 @@ void respond(int n)
         char *t, *t2;
         while (h < reqhdr + 16)
         {
-            char *k, *v, *t;
+            char *k, *v, *e;
             k = strtok(NULL, "\r\n: \t");
             if (!k)
                 break;
@@ -192,16 +195,42 @@ void respond(int n)
             h->value = v;
             h++;
             fprintf(stderr, "[H] %s: %s\n", k, v);
-            t = v + 1 + strlen(v);
-            if (t[1] == '\r' && t[2] == '\n')
+            e = v + 1 + strlen(v);
+            if (e[1] == '\r' && e[2] == '\n')
                 break;
         }
-        t = strtok(NULL, "\r\n");
-        t2 = request_header("Content-Length");
-        payload = t;
-        payload_size = t2 ? atol(t2) : (rcvd - (t - buf));
 
-        int clientfd = clients[n];
+        t = strtok(NULL, "\r\n");
+        payload = t;
+        t2 = request_header("Content-Length");
+        payload_size = t2 ? atol(t2) : (total - (t - buf));
+
+        while (t2 && total < payload_size)
+        {
+            rcvd = recv(clients[slot], buf + total, BUF_SIZE - total, 0);
+
+            if (rcvd < 0)
+            {
+                fputs("recv() error\n", stderr);
+                break;
+            }
+            else if (rcvd == 0)
+            {
+                fputs("Client disconnected unexpectedly.\n", stderr);
+                break;
+            }
+
+            total += rcvd;
+        }
+
+        if (!t)
+        {
+            t = strtok(NULL, "\r\n");
+            payload = t;
+        }
+
+finish:
+        int clientfd = clients[slot];
         dup2(clientfd, STDOUT_FILENO);
         close(clientfd);
 

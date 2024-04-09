@@ -179,6 +179,7 @@ void route()
                 void *payloade = memmem(
                     payloadb, payload_size - (payloadb - payload), 
                     bound, strlen(bound));
+                // TODO: Manage the case where payloade returns 0
                 payloade -= 4;
 
                 char path[32];
@@ -201,7 +202,7 @@ void route()
                 printf(\
                     "HTTP/1.1 415 Unsupported Media Type\r\n" \
                     "Content-Type: text/plain\r\n" \
-                    "Connection: close\r\n\r\n" \
+                    "Connection: close\r\n" \
                     "\r\n" \
                     "The payload must be presented as multipart/form-data.\r\n" \
                 );
@@ -278,7 +279,7 @@ void route()
     }
 
     printf(\
-        "HTTP/1.1 500 Not Handled\r\n" \
+        "HTTP/1.1 400 Bad Request\r\n" \
         "Content-Type: text/plain\r\n" \
         "Connection: close\r\n" \
         "\r\n" \
