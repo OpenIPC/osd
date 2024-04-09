@@ -205,7 +205,7 @@ int load_bitmapex(const char *filename, OSD_LOGO_T *pVideoLogo, OSD_COLOR_FMT_E 
 
     if (!(pFile = fopen(filename, "rb")))
     {
-        fprintf(stderr, "Open file faild:%s!\n", filename);
+        fprintf(stderr, "Open file failed:%s!\n", filename);
         return -1;
     }
 

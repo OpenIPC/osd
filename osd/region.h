@@ -12,7 +12,8 @@ extern "C"
 #include "bitmap.h"
 
     int create_region(int handle, int x, int y, int width, int height);
-    int load_region(unsigned int handle, int enPixelFmt);
+    int prepare_bitmap(const char *filename, BITMAP *bitmap, int bFil, unsigned int u16FilColor, int enPixelFmt);
+    int set_bitmap(unsigned int handle, BITMAP *bitmap);
     void unload_region(unsigned int handle);
 
 #ifdef __cplusplus

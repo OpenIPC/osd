@@ -209,7 +209,7 @@ int prepare_bitmap(const char *filename, BITMAP *bitmap, int bFil, unsigned int 
 
     if (!(bitmap->pData = malloc(s32BytesPerPix * bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight)))
     {
-        fprintf(stderr, "malloc osd memory err!\n");
+        fputs("malloc osd memory err!\n", stderr);
         return -1;
     }
 
@@ -227,9 +227,9 @@ int prepare_bitmap(const char *filename, BITMAP *bitmap, int bFil, unsigned int 
     {
         s32Width = DIV_UP(bmpInfo.bmiHeader.biWidth, 4);
         pu8Data = malloc(s32Width * bmpInfo.bmiHeader.biHeight);
-        if (NULL == pu8Data)
+        if (!pu8Data)
         {
-            fprintf(stderr, "malloc osd memory err!\n");
+            fputs("malloc osd memory err!\n", stderr);
             return -1;
         }
     }
@@ -304,20 +304,6 @@ int set_bitmap(unsigned int handle, BITMAP *bitmap)
     {
         fprintf(stderr, "RGN_SetBitMap failed with %#x!\n", s32Ret);
         return -1;
-    }
-    return s32Ret;
-}
-
-int load_region(unsigned int handle, int enPixelFmt)
-{
-    BITMAP bitmap;
-    int s32Ret;
-    char path[32];
-    sprintf(path, "/tmp/osd%d.bmp", handle);
-    if (!(s32Ret = prepare_bitmap(path, &bitmap, 0, 0, enPixelFmt)))
-    {
-        s32Ret = set_bitmap(handle, &bitmap);
-        free(bitmap.pData);
     }
     return s32Ret;
 }

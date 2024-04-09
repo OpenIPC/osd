@@ -150,7 +150,15 @@ void overlays()
                 char img[32];
                 sprintf(img, "/tmp/osd%d.bmp", id);
                 if (!access(img, F_OK))
-                    load_region(id, PIXEL_FORMAT_1555);
+                {
+                    BITMAP bitmap;
+                    if (!(prepare_bitmap(img, &bitmap, 0, 0, PIXEL_FORMAT_1555)))
+                    {
+                        create_region(id, osds[id].posx, osds[id].posy, bitmap.u32Width, bitmap.u32Height);
+                        set_bitmap(id, &bitmap);
+                        free(bitmap.pData);
+                    }
+                }
                 else
                     unload_region(id);
                 osds[id].updt = 0;
