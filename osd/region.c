@@ -127,7 +127,7 @@ int create_region(int handle, int x, int y, int width, int height)
     stChnAttr.unPara.stOsdChnPort.stOsdAlphaAttr.eAlphaMode = E_MI_RGN_PIXEL_ALPHA;
     stChnAttr.unPara.stOsdChnPort.stOsdAlphaAttr.stAlphaPara.stArgb1555Alpha.u8BgAlpha = 0;
     stChnAttr.unPara.stOsdChnPort.stOsdAlphaAttr.stAlphaPara.stArgb1555Alpha.u8FgAlpha = 255;
-    stChnAttr.unPara.stOsdChnPort.stColorInvertAttr.bEnableColorInv = 0;
+    // stChnAttr.unPara.stOsdChnPort.stColorInvertAttr.bEnableColorInv = 0;
     // stChnAttr.unPara.stOsdChnPort.stColorInvertAttr.eInvertColorMode = E_MI_RGN_BELOW_LUMA_THRESHOLD;
     // stChnAttr.unPara.stOsdChnPort.stColorInvertAttr.u16LumaThreshold = 128;
     // stChnAttr.unPara.stOsdChnPort.stColorInvertAttr.u16WDivNum = stRegion.stOsdInitParam.stSize.u32Width * inv16;
@@ -141,11 +141,11 @@ int create_region(int handle, int x, int y, int width, int height)
     stChnAttr.unChnAttr.stOverlayChn.stQpInfo.bQpDisable = 0;
     stChnAttr.unChnAttr.stOverlayChn.stQpInfo.bAbsQp = 0;
     stChnAttr.unChnAttr.stOverlayChn.stQpInfo.s32Qp = 0;
-    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Height = width;
-    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Width = height;
-    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.u32LumThresh = 128;
-    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.enChgMod = LESSTHAN_LUM_THRESH;
-    //stChnAttr.unChnAttr.stOverlayChn.stInvertColor.bInvColEn = 0;
+    // stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Height = width;
+    // stChnAttr.unChnAttr.stOverlayChn.stInvertColor.stInvColArea.u32Width = height;
+    // stChnAttr.unChnAttr.stOverlayChn.stInvertColor.u32LumThresh = 128;
+    // stChnAttr.unChnAttr.stOverlayChn.stInvertColor.enChgMod = LESSTHAN_LUM_THRESH;
+    // stChnAttr.unChnAttr.stOverlayChn.stInvertColor.bInvColEn = 0;
 #ifndef __16CV300__
     stChnAttr.unChnAttr.stOverlayChn.u16ColorLUT[0] = 0x3e0;
     stChnAttr.unChnAttr.stOverlayChn.u16ColorLUT[1] = 0x7FFF;
@@ -207,8 +207,7 @@ int prepare_bitmap(const char *filename, BITMAP *bitmap, int bFil, unsigned int 
         return -1;
     }
 
-    bitmap->pData = malloc(s32BytesPerPix * (bmpInfo.bmiHeader.biWidth) * (bmpInfo.bmiHeader.biHeight));
-    if (bitmap->pData == NULL)
+    if (!(bitmap->pData = malloc(s32BytesPerPix * bmpInfo.bmiHeader.biWidth * bmpInfo.bmiHeader.biHeight)))
     {
         fprintf(stderr, "malloc osd memory err!\n");
         return -1;
@@ -227,7 +226,7 @@ int prepare_bitmap(const char *filename, BITMAP *bitmap, int bFil, unsigned int 
     if (enPixelFmt == PIXEL_FORMAT_2BPP)
     {
         s32Width = DIV_UP(bmpInfo.bmiHeader.biWidth, 4);
-        pu8Data = malloc((s32Width) * (bmpInfo.bmiHeader.biHeight));
+        pu8Data = malloc(s32Width * bmpInfo.bmiHeader.biHeight);
         if (NULL == pu8Data)
         {
             fprintf(stderr, "malloc osd memory err!\n");
@@ -311,13 +310,15 @@ int set_bitmap(unsigned int handle, BITMAP *bitmap)
 
 int load_region(unsigned int handle, int enPixelFmt)
 {
-    BITMAP* bitmap;
+    BITMAP bitmap;
+    int s32Ret;
     char path[32];
     sprintf(path, "/tmp/osd%d.bmp", handle);
-    prepare_bitmap(path, bitmap, 0, 0, enPixelFmt);
-    
-    int s32Ret = set_bitmap(handle, bitmap);
-    free(bitmap->pData);
+    if (!(s32Ret = prepare_bitmap(path, &bitmap, 0, 0, enPixelFmt)))
+    {
+        s32Ret = set_bitmap(handle, &bitmap);
+        free(bitmap.pData);
+    }
     return s32Ret;
 }
 

@@ -10,6 +10,11 @@ extern "C"
 
 #include "common.h"
 
+    typedef struct
+    {
+        char *name, *value;
+    } header_t;
+
     extern char *method,  // "GET" or "POST"
                 *uri,     // "/index.html" things before '?'
                 *query,   // "a=1&b=2"     things after  '?'

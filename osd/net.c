@@ -7,10 +7,6 @@ int *clients;
 static void start_server();
 static void respond(int);
 
-typedef struct
-{
-    char *name, *value;
-} header_t;
 static header_t reqhdr[17] = {{"\0", "\0"}};
 
 char *method,
@@ -65,12 +61,9 @@ void serve_forever()
 char *request_header(const char *name)
 {
     header_t *h = reqhdr;
-    while (h->name)
-    {
+    for (; h->name; h++)
         if (!strcmp(h->name, name))
             return h->value;
-        h++;
-    }
     return NULL;
 }
 
@@ -78,7 +71,6 @@ header_t *request_headers(void) { return reqhdr; }
 
 static void unescape_uri(char *uri)
 {
-    char chr = 0;
     char *src = uri;
     char *dst = uri;
 
@@ -88,18 +80,10 @@ static void unescape_uri(char *uri)
     dst = src;
     while (*src && !isspace((int)(*src)))
     {
-        if (*src == '+')
-            chr = ' ';
-        else if ((*src == '%') && src[1] && src[2])
-        {
-            src++;
-            chr = ((*src & 0x0F) + 9 * (*src > '9')) * 16;
-            src++;
-            chr += ((*src & 0x0F) + 9 * (*src > '9'));
-        }
-        else
-            chr = *src;
-        *dst++ = chr;
+        *dst++ = (*src == '+') ? ' ' :
+                 ((*src == '%') && src[1] && src[2]) ?
+                 ((*++src & 0x0F) + 9 * (*src > '9')) * 16 + ((*++src & 0x0F) + 9 * (*src > '9')) :
+                 *src;
         src++;
     }
     *dst = '\0';
@@ -153,15 +137,14 @@ void start_server()
 
 void respond(int slot)
 {
-    int rcvd;
-    int total = 0;
+    int rcvd, total = 0;
 
     buf = malloc(BUF_SIZE);
 
     rcvd = recv(clients[slot], buf + total, BUF_SIZE - total, 0);
 
     if (rcvd < 0)
-        goto finish;
+        fputs("recv() error\n", stderr);
     else if (rcvd == 0)
         fputs("Client disconnected unexpectedly.\n", stderr);
 
@@ -189,11 +172,9 @@ void respond(int slot)
             if (!k)
                 break;
             v = strtok(NULL, "\r\n");
-            while (*v && *v == ' ')
-                v++;
+            while (*v && *v == ' ' && v++);
             h->name = k;
-            h->value = v;
-            h++;
+            h++->value = v;
             fprintf(stderr, "[H] %s: %s\n", k, v);
             e = v + 1 + strlen(v);
             if (e[1] == '\r' && e[2] == '\n')
@@ -224,12 +205,8 @@ void respond(int slot)
         }
 
         if (!t)
-        {
-            t = strtok(NULL, "\r\n");
-            payload = t;
-        }
+            payload = t = strtok(NULL, "\r\n");
 
-finish:
         int clientfd = clients[slot];
         dup2(clientfd, STDOUT_FILENO);
         close(clientfd);

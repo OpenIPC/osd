@@ -149,7 +149,6 @@ void overlays()
             {
                 char img[32];
                 sprintf(img, "/tmp/osd%d.bmp", id);
-                fprintf(stderr, "access=%s %d\n", img, access(img, F_OK));
                 if (!access(img, F_OK))
                     load_region(id, PIXEL_FORMAT_1555);
                 else
