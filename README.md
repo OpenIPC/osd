@@ -54,11 +54,18 @@ Showing the time and customizing the time format is done this way:
 curl 192.168.1.17:9000/api/time?fmt=%25Y/%25m/%25d%20%25H:%25M:%25S
 curl 192.168.1.17:9000/api/osd/2?text=$t&posy=120
 ```
+N.B. Percent signs have to be escaped with %25 in curl URL syntaxes
 
 UTC date and time can be set using Unix timestamps:
 ```
 curl 192.168.1.17:9000/api/time?ts=1712320920
 ```
+
+Bitmap files (.bmp) can be uploaded to a region using this command:
+```
+curl -F data=@.\Desktop\myimage.bmp 192.168.1.17:9000/api/osd/3
+```
+N.B. curl already implies "-X POST" when passing a file with "-F"
 
 ### Technical support and donations
 
