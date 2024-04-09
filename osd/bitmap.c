@@ -82,7 +82,7 @@ int parse_bitmap(const char *filename, OSD_BITMAPFILEHEADER *pBmpFileHeader, OSD
         return -1;
     }
 
-    if (pBmpInfo->bmiHeader.biCompression)
+    if (pBmpInfo->bmiHeader.biCompression != 0 && pBmpInfo->bmiHeader.biCompression != 3)
     {
         fprintf(stderr, "not support compressed bitmap file!\n");
         fclose(pFile);
