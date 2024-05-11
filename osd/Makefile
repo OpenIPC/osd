@@ -11,11 +11,6 @@ osd-hisi:
 	$(eval LIB = -ldnvqe -lmpi -lsecurec -lupvqe -lVoiceEngine)
 	$(BUILD)
 
-osd-inge:
-	$(eval SDK = ../sdk/ingenic)
-	$(eval LIB = -D__INGENIC__ -lalog -limp)
-	$(BUILD)
-
 osd-star6b0:
 	$(eval SDK = ../sdk/infinity6)
 	$(eval LIB = -D__SIGMASTAR__ -D__INFINITY6__ -D__INFINITY6B0__ -lcam_os_wrapper -lm -lmi_rgn -lmi_sys)

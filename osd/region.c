@@ -24,29 +24,6 @@ int create_region(int *handle, int x, int y, int width, int height)
     stRegion.stOsdInitParam.ePixelFmt = PIXEL_FORMAT_1555;
 
     s32Ret = MI_RGN_GetAttr(*handle, &stRegionCurrent);
-#elif defined(__INGENIC__)
-    IMPOSDRgnAttr stRegionCurrent;
-    IMPOSDRgnAttr stRegion;
-
-    IMPOSDGrpRgnAttr stChnAttr;
-    IMPOSDGrpRgnAttr stChnAttrCurrent;
-
-    stRegion.type = OSD_REG_PIC;
-    stRegion.rect.p0.x = x;
-    stRegion.rect.p0.y = y;
-    stRegion.rect.p1.x = x + width - 1;
-    stRegion.rect.p1.y = y + height - 1;
-    stRegion.fmt = PIXEL_FORMAT_1555;
-    stRegion.data.picData.pData = NULL;
-
-    if (*handle != -1)
-        s32Ret = IMP_OSD_GetRgnAttr(*handle, &stRegionCurrent);
-    else
-    {
-        *handle = IMP_OSD_CreateRgn(NULL);
-        fprintf(stderr, "handle=%d\n", *handle);
-        IMP_OSD_RegisterRgn(*handle, 0, NULL);
-    }
 #else
     MPP_CHN_S stChn;
 
@@ -74,8 +51,6 @@ int create_region(int *handle, int x, int y, int width, int height)
         fprintf(stderr, "[%s:%d]RGN_GetAttr failed with %#x , creating region %d...\n", __func__, __LINE__, s32Ret, *handle);
 #ifdef __SIGMASTAR__
         s32Ret = MI_RGN_Create(*handle, &stRegion);
-#elif defined(__INGENIC__)
-        s32Ret = IMP_OSD_SetRgnAttr(*handle, &stRegion);
 #else
         s32Ret = HI_MPI_RGN_Create(*handle, &stRegion);
 #endif
@@ -89,8 +64,6 @@ int create_region(int *handle, int x, int y, int width, int height)
     {
 #ifdef __SIGMASTAR__
         if (stRegionCurrent.stOsdInitParam.stSize.u32Height != stRegion.stOsdInitParam.stSize.u32Height || stRegionCurrent.stOsdInitParam.stSize.u32Width != stRegion.stOsdInitParam.stSize.u32Width)
-#elif defined(__INGENIC__)
-        if (stRegionCurrent.rect.p1.x - stRegionCurrent.rect.p0.x != width || stRegionCurrent.rect.p1.y - stRegionCurrent.rect.p0.y != height)
 #else
         if (stRegionCurrent.unAttr.stOverlay.stSize.u32Height != stRegion.unAttr.stOverlay.stSize.u32Height || stRegionCurrent.unAttr.stOverlay.stSize.u32Width != stRegion.unAttr.stOverlay.stSize.u32Width)
 #endif
@@ -103,8 +76,6 @@ int create_region(int *handle, int x, int y, int width, int height)
             MI_RGN_DetachFromChn(*handle, &stChn);
             MI_RGN_Destroy(*handle);
             s32Ret = MI_RGN_Create(*handle, &stRegion);
-#elif defined(__INGENIC__)
-            s32Ret = IMP_OSD_SetRgnAttr(*handle, &stRegion);
 #else
             HI_MPI_RGN_DetachFromChn(*handle, &stChn);
             HI_MPI_RGN_Destroy(*handle);
@@ -120,14 +91,11 @@ int create_region(int *handle, int x, int y, int width, int height)
 
 #ifdef __SIGMASTAR__
     s32Ret = MI_RGN_GetDisplayAttr(*handle, &stChn, &stChnAttrCurrent);
-#elif defined(__INGENIC__)
-    s32Ret = IMP_OSD_GetGrpRgnAttr(*handle, 0, &stChnAttrCurrent);
 #else
     s32Ret = HI_MPI_RGN_GetDisplayAttr(*handle, &stChn, &stChnAttrCurrent);
 #endif
     if (s32Ret)
         fprintf(stderr, "[%s:%d]RGN_GetDisplayAttr failed with %#x %d, attaching...\n", __func__, __LINE__, s32Ret, *handle);
-#ifndef __INGENIC__
 #ifdef __SIGMASTAR__
     else if (stChnAttrCurrent.stPoint.u32X != x || stChnAttrCurrent.stPoint.u32Y != y)
 #else
@@ -144,7 +112,6 @@ int create_region(int *handle, int x, int y, int width, int height)
         HI_MPI_RGN_DetachFromChn(*handle, &stChn);
 #endif
     }
-#endif
 
 #ifdef __SIGMASTAR__
     memset(&stChnAttr, 0, sizeof(MI_RGN_ChnPortParam_t));
@@ -160,14 +127,6 @@ int create_region(int *handle, int x, int y, int width, int height)
     MI_RGN_AttachToChn(*handle, &stChn, &stChnAttr);
     stChn.s32OutputPortId = 1;
     MI_RGN_AttachToChn(*handle, &stChn, &stChnAttr);
-#elif defined(__INGENIC__)
-    memset(&stChnAttr, 0, sizeof(IMPOSDGrpRgnAttr));
-    stChnAttr.show = 1;
-    stChnAttr.gAlphaEn = 1;
-    stChnAttr.fgAlhpa = 255;
-
-    IMP_OSD_RegisterRgn(*handle, 0, &stChnAttr);
-    IMP_OSD_Start(0);
 #else
     memset(&stChnAttr, 0, sizeof(RGN_CHN_ATTR_S));
     stChnAttr.bShow = 1;
@@ -321,15 +280,6 @@ int set_bitmap(int handle, BITMAP *bitmap)
 {
 #ifdef __SIGMASTAR__
     int s32Ret = MI_RGN_SetBitMap(handle, (MI_RGN_Bitmap_t *)(bitmap));
-#elif defined(__INGENIC__)
-    IMPOSDRgnAttr stRegion;
-    IMP_OSD_GetRgnAttr(handle, &stRegion);
-    stRegion.type = OSD_REG_PIC;
-    stRegion.rect.p1.x = stRegion.rect.p0.x + bitmap->u32Width - 1;
-    stRegion.rect.p1.y = stRegion.rect.p0.y + bitmap->u32Height - 1;
-    stRegion.fmt = bitmap->enPixelFormat;
-    stRegion.data.picData.pData = bitmap->pData;
-    int s32Ret = IMP_OSD_SetRgnAttr(handle, &stRegion);
 #else
     int s32Ret = HI_MPI_RGN_SetBitMap(handle, (BITMAP_S *)(bitmap));
 #endif
@@ -354,11 +304,6 @@ void unload_region(int *handle)
     stChn.s32OutputPortId = 0;
     MI_RGN_DetachFromChn(*handle, &stChn);
     int s32Ret = MI_RGN_Destroy(*handle);
-#elif defined(__INGENIC__)
-    IMP_OSD_UnRegisterRgn(*handle, 0);
-    IMP_OSD_DestroyRgn(*handle);
-    *handle = -1;
-    int s32Ret = 0;
 #else
     MPP_CHN_S stChn;
     stChn.s32DevId = 0;

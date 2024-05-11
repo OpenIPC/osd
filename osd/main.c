@@ -89,7 +89,6 @@ static void fill(char* str)
             strcat(out, s);
             opos += strlen(s);
         }
-#ifndef __INGENIC__
         else if (str[ipos + 1] == 'T')
         {
             ipos++;
@@ -105,7 +104,6 @@ static void fill(char* str)
             strcat(out, t);
             opos += strlen(t);
         }
-#endif
         else if (str[ipos + 1] == '$') {
             ipos++;
             strcat(out, "$");
@@ -296,20 +294,10 @@ void route()
     );
 }
 
-#ifdef __INGENIC__
-extern int IMP_OSD_SetPoolSize(int size);
-#endif
-
 int main(int argc, char *argv[])
 {
-#ifndef __INGENIC__
     int fd_mem = open("/dev/mem", O_RDWR);
     io_map = mmap(NULL, IO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_mem, IO_BASE);
-#else
-    fprintf(stderr, "IMP_System_Init ret:%d\n", IMP_System_Init());
-    fprintf(stderr, "IMP_OSD_SetPoolSize ret:%d\n", IMP_OSD_SetPoolSize(512 * 1024));
-    fprintf(stderr, "IMP_OSD_CreateGroup ret:%d\n", IMP_OSD_CreateGroup(0));
-#endif
 
 #ifdef __SIGMASTAR__
     static MI_RGN_PaletteTable_t g_stPaletteTable = {{{0, 0, 0, 0}}};
@@ -344,13 +332,8 @@ int main(int argc, char *argv[])
     printf("[%s:%d]RGN_DeInit failed with %#x!\n", __func__, __LINE__, s32Ret);
 #endif
 
-#ifndef __INGENIC__
     munmap(io_map, IO_SIZE);
     close(fd_mem);
-#else
-    IMP_OSD_DestroyGroup(0);
-    fprintf(stderr, "IMP_System_Exit ret:%d\n", IMP_System_Exit());
-#endif
 
     return 0;
 }
