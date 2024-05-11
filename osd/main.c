@@ -89,6 +89,7 @@ static void fill(char* str)
             strcat(out, s);
             opos += strlen(s);
         }
+#ifndef __INGENIC__
         else if (str[ipos + 1] == 'T')
         {
             ipos++;
@@ -104,6 +105,7 @@ static void fill(char* str)
             strcat(out, t);
             opos += strlen(t);
         }
+#endif
         else if (str[ipos + 1] == '$') {
             ipos++;
             strcat(out, "$");
@@ -131,18 +133,18 @@ void overlays()
                 }
 
                 if (osds[id].updt) {
-                    RECT rect = measure_text(osds[id].font, osds[id].size, out);
-                    create_region(id, osds[id].posx, osds[id].posy, rect.width, rect.height);
-
-                    BITMAP bitmap = raster_text(osds[id].font, osds[id].size, out);
-#ifdef __SIGMASTAR__
-                    int s32Ret = MI_RGN_SetBitMap(id, (MI_RGN_Bitmap_t *)(&bitmap));
-#else
-                    int s32Ret = HI_MPI_RGN_SetBitMap(id, (BITMAP_S *)(&bitmap));
-#endif
-                    if (s32Ret)
-                        fprintf(stderr, "[%s:%d]RGN_SetBitMap failed with %#x %d!\n", __func__, __LINE__, s32Ret, id);
-                    free(bitmap.pData);
+                    char *font;
+                    asprintf(&font, "/usr/share/fonts/truetype/%s.ttf", osds[id].font);
+                    if (!access(font, F_OK)) {
+                        RECT rect = measure_text(font, osds[id].size, out);
+                        create_region(
+                            &osds[id].hand, 
+                            osds[id].posx, osds[id].posy,
+                            rect.width, rect.height);
+                        BITMAP bitmap = raster_text(font, osds[id].size, out);
+                        set_bitmap(osds[id].hand, &bitmap);
+                        free(bitmap.pData);
+                    }
                 }
             }
             else if (empty(osds[id].text) && osds[id].updt)
@@ -154,13 +156,13 @@ void overlays()
                     BITMAP bitmap;
                     if (!(prepare_bitmap(img, &bitmap, 0, 0, PIXEL_FORMAT_1555)))
                     {
-                        create_region(id, osds[id].posx, osds[id].posy, bitmap.u32Width, bitmap.u32Height);
-                        set_bitmap(id, &bitmap);
+                        create_region(&osds[id].hand, osds[id].posx, osds[id].posy, bitmap.u32Width, bitmap.u32Height);
+                        set_bitmap(osds[id].hand, &bitmap);
                         free(bitmap.pData);
                     }
                 }
                 else
-                    unload_region(id);
+                    unload_region(&osds[id].hand);
                 osds[id].updt = 0;
             }
         }
@@ -294,10 +296,20 @@ void route()
     );
 }
 
+#ifdef __INGENIC__
+extern int IMP_OSD_SetPoolSize(int size);
+#endif
+
 int main(int argc, char *argv[])
 {
+#ifndef __INGENIC__
     int fd_mem = open("/dev/mem", O_RDWR);
     io_map = mmap(NULL, IO_SIZE, PROT_READ | PROT_WRITE, MAP_SHARED, fd_mem, IO_BASE);
+#else
+    fprintf(stderr, "IMP_System_Init ret:%d\n", IMP_System_Init());
+    fprintf(stderr, "IMP_OSD_SetPoolSize ret:%d\n", IMP_OSD_SetPoolSize(512 * 1024));
+    fprintf(stderr, "IMP_OSD_CreateGroup ret:%d\n", IMP_OSD_CreateGroup(0));
+#endif
 
 #ifdef __SIGMASTAR__
     static MI_RGN_PaletteTable_t g_stPaletteTable = {{{0, 0, 0, 0}}};
@@ -310,6 +322,7 @@ int main(int argc, char *argv[])
         PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     for (int id = 0; id < MAX_OSD; id++)
     {
+        osds[id].hand = -1;
         osds[id].size = DEF_SIZE;
         osds[id].posx = DEF_POSX;
         osds[id].posy = DEF_POSY;
@@ -331,8 +344,13 @@ int main(int argc, char *argv[])
     printf("[%s:%d]RGN_DeInit failed with %#x!\n", __func__, __LINE__, s32Ret);
 #endif
 
+#ifndef __INGENIC__
     munmap(io_map, IO_SIZE);
     close(fd_mem);
+#else
+    IMP_OSD_DestroyGroup(0);
+    fprintf(stderr, "IMP_System_Exit ret:%d\n", IMP_System_Exit());
+#endif
 
     return 0;
 }

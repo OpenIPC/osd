@@ -102,13 +102,15 @@ static inline void calcdim(double *margin, double *height, double *width, const 
 
 RECT measure_text(const char *font, double size, const char *text)
 {
-    char *path;
-    asprintf(&path, "/usr/share/fonts/truetype/%s.ttf", font);
-    loadfont(&sft, path, size, &lmtx);
+    loadfont(&sft, font, size, &lmtx);
 
     double margin, height, width;
     calcdim(&margin, &height, &width, text);
-    RECT rect = { .height = height, .width = width };
+	// Some platforms operate with a coarse pixel size of 2x2
+	// and rounding up is required for a sufficient canvas size
+    RECT rect = { .height = ceil(height), .width = ceil(width) };
+    rect.height += rect.height & 1;
+    rect.width += rect.width & 1;
 
     sft_freefont(sft.font);
     return rect;
@@ -116,9 +118,7 @@ RECT measure_text(const char *font, double size, const char *text)
 
 BITMAP raster_text(const char *font, double size, const char *text)
 {
-    char *path;
-    asprintf(&path, "/usr/share/fonts/truetype/%s.ttf", font);
-    loadfont(&sft, path, size, &lmtx);
+    loadfont(&sft, font, size, &lmtx);
 
     double margin, height, width;
     calcdim(&margin, &height, &width, text);

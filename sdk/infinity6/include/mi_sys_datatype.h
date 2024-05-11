@@ -19,6 +19,9 @@
 #define MI_SYS_MAX_OUTPUT_PORT_CNT  (5)
 #define MI_SYS_MAX_DEV_CHN_CNT      (48)
 #define MI_SYS_INVLAID_SEQUENCE_NUM ((MI_U32)-1)
+#ifdef __INFINITY6E__
+#define MI_SYS_MAX_SUB_PLANE_CNT    (4)
+#endif
 
 
 //ensure that sizeof(MI_VB_PoolListConf_t)  is less that 4096 !!!
@@ -183,6 +186,9 @@ typedef enum
     E_MI_SYS_COMPRESS_MODE_SEG,//compress unit is 256 bytes as a segment
     E_MI_SYS_COMPRESS_MODE_LINE,//compress unit is the whole line
     E_MI_SYS_COMPRESS_MODE_FRAME,//compress unit is the whole frame
+#ifdef __INFINITY6E__
+    E_MI_SYS_COMPRESS_MODE_TO_8BIT,
+#endif
     E_MI_SYS_COMPRESS_MODE_BUTT, //number
 }MI_SYS_CompressMode_e;
 
@@ -217,6 +223,9 @@ typedef enum
     E_MI_SYS_BUFDATA_RAW = 0,
     E_MI_SYS_BUFDATA_FRAME,
     E_MI_SYS_BUFDATA_META,
+#ifdef __INFINITY6E__
+    E_MI_SYS_BUFDATA_MULTIPLANE
+#endif
 } MI_SYS_BufDataType_e;
 
 typedef enum
@@ -342,6 +351,28 @@ typedef  struct  MI_SYS_FrameData_s
     MI_SYS_FrameIspInfo_t stFrameIspInfo;//isp info of each frame
     MI_SYS_WindowRect_t stContentCropWindow;
 } MI_SYS_FrameData_t;
+
+#ifdef __INFINITY6E__
+typedef struct MI_SYS_FrameDataSubPlane_s
+{
+    MI_SYS_PixelFormat_e ePixelFormat;
+    MI_SYS_CompressMode_e eCompressMode;
+    MI_U64 u64FrameId;
+
+    MI_U16 u16Width;
+    MI_U16 u16Height;
+    void* pVirAddr[2];
+    MI_PHY phyAddr[2];
+    MI_U16 u16Stride[2];
+    MI_U32 u32BufSize;
+} MI_SYS_FrameDataSubPlane_t;
+
+typedef struct MI_SYS_FrameDataMultiPlane_s
+{
+    MI_U8 u8SubPlaneNum;
+    MI_SYS_FrameDataSubPlane_t stSubPlanes[MI_SYS_MAX_SUB_PLANE_CNT];
+} MI_SYS_FrameDataMultiPlane_t;
+#endif
 
 typedef  struct  MI_SYS_BufInfo_s
 {

@@ -7,6 +7,7 @@
 #include <unistd.h> // getopt, optarg, opterr
 #include <ctype.h>  // isdigit
 #include <time.h>   // clock_(get|set)time, timespec
+#include <math.h>   // ceil
 
 #include <arpa/inet.h>
 #include <fcntl.h>
@@ -38,6 +39,15 @@ extern "C"
 #define PIXEL_FORMAT_1555 E_MI_RGN_PIXEL_FORMAT_ARGB1555
 #define PIXEL_FORMAT_2BPP E_MI_RGN_PIXEL_FORMAT_I2
 #define PIXEL_FORMAT_8888 E_MI_RGN_PIXEL_FORMAT_ARGB8888
+#elif defined(__INGENIC__)
+#include "imp_system.h"
+#include "imp_osd.h"
+#include "imp_isp.h"
+
+#define PIXEL_FORMAT_4444 0
+#define PIXEL_FORMAT_1555 PIX_FMT_RGB555LE
+#define PIXEL_FORMAT_2BPP PIX_FMT_0RGB
+#define PIXEL_FORMAT_8888 PIX_FMT_ARGB
 #else
 #include "hi_common.h"
 #include "hi_math.h"
@@ -72,6 +82,7 @@ extern "C"
     typedef struct osd
     {
         double size;
+        int hand;
         short posx, posy;
         char updt;
         char font[32];

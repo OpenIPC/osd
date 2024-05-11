@@ -11,10 +11,10 @@ extern "C"
 #include "common.h"
 #include "bitmap.h"
 
-    int create_region(int handle, int x, int y, int width, int height);
+    int create_region(int *handle, int x, int y, int width, int height);
     int prepare_bitmap(const char *filename, BITMAP *bitmap, int bFil, unsigned int u16FilColor, int enPixelFmt);
-    int set_bitmap(unsigned int handle, BITMAP *bitmap);
-    void unload_region(unsigned int handle);
+    int set_bitmap(int handle, BITMAP *bitmap);
+    void unload_region(int *handle);
 
 #ifdef __cplusplus
 #if __cplusplus

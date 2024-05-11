@@ -3,15 +3,25 @@ BUILD = $(CC) $(SRCS) -I $(SDK)/include -L $(DRV) $(LIB) -Os -s -o $(or $(TARGET
 
 osd-goke:
 	$(eval SDK = ../sdk/gk7205v300)
-	$(eval LIB = -lhi_mpi -lgk_api -ldnvqe -lupvqe -lvoice_engine -lsecurec)
+	$(eval LIB = -ldnvqe -lgk_api -lhi_mpi -lsecurec -lupvqe -lvoice_engine)
 	$(BUILD)
 
 osd-hisi:
 	$(eval SDK = ../sdk/hi3516ev300)
-	$(eval LIB = -lmpi -ldnvqe -lupvqe -lVoiceEngine -lsecurec)
+	$(eval LIB = -ldnvqe -lmpi -lsecurec -lupvqe -lVoiceEngine)
 	$(BUILD)
 
-osd-star:
+osd-inge:
+	$(eval SDK = ../sdk/ingenic)
+	$(eval LIB = -D__INGENIC__ -lalog -limp)
+	$(BUILD)
+
+osd-star6b0:
 	$(eval SDK = ../sdk/infinity6)
-	$(eval LIB = -D__SIGMASTAR__ -lcam_os_wrapper -lm -lmi_rgn -lmi_sys)
+	$(eval LIB = -D__SIGMASTAR__ -D__INFINITY6__ -D__INFINITY6B0__ -lcam_os_wrapper -lm -lmi_rgn -lmi_sys)
+	$(BUILD)
+
+osd-star6e:
+	$(eval SDK = ../sdk/infinity6)
+	$(eval LIB = -D__SIGMASTAR__ -D__INFINITY6__ -D__INFINITY6E__ -lcam_os_wrapper -lm -lmi_rgn -lmi_sys)
 	$(BUILD)

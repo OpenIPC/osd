@@ -19,7 +19,8 @@ jobs:
         run: |
           bash build.sh osd-goke
           bash build.sh osd-hisi
-          bash build.sh osd-star
+          bash build.sh osd-star6b0
+          bash build.sh osd-star6e
 
       - name: Upload files
         uses: softprops/action-gh-release@v2
@@ -28,4 +29,5 @@ jobs:
           files: |
             osd/osd-goke
             osd/osd-hisi
-            osd/osd-star
+            osd/osd-star6b0
+            osd/osd-star6e
