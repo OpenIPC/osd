@@ -310,7 +310,7 @@ int main(int argc, char *argv[])
         PROT_READ | PROT_WRITE, MAP_ANONYMOUS | MAP_SHARED, -1, 0);
     for (int id = 0; id < MAX_OSD; id++)
     {
-        osds[id].hand = -1;
+        osds[id].hand = id;
         osds[id].size = DEF_SIZE;
         osds[id].posx = DEF_POSX;
         osds[id].posy = DEF_POSY;
