@@ -5,7 +5,6 @@ char chnCount = 0;
 char chip[16] = "unknown";
 char family[32] = {0};
 hal_platform plat = HAL_PLATFORM_UNK;
-char sensor[16] = "unidentified";
 int series = 0;
 
 bool hal_registry(unsigned int addr, unsigned int *data, hal_register_op op) {
@@ -58,9 +57,6 @@ void hal_identify(void) {
     FILE *file;
     char *endMark;
     char line[200] = {0};
-
-    char *sensorlocal = getenv("SENSOR");
-    if (*sensorlocal) strncpy(sensor, sensorlocal, sizeof(sensor));
 
     if (!access("/proc/mi_modules", F_OK) && 
         hal_registry(0x1F003C00, &series, OP_READ)) {

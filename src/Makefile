@@ -2,7 +2,7 @@ SRC = $(shell find ./ -name '*.c')
 OBJ = ../osd
 
 .PHONY: clean osd
-divinus: $(OBJ)
+osd: $(OBJ)
 
 $(OBJ): $(SRC:%.c=%.o)
 	$(CC) $^ -rdynamic $(OPT) -o $@

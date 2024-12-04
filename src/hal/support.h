@@ -37,7 +37,6 @@ extern char chnCount;
 extern char chip[16];
 extern char family[32];
 extern hal_platform plat;
-extern char sensor[16];
 extern int series;
 
 bool hal_registry(unsigned int addr, unsigned int *data, hal_register_op op);
