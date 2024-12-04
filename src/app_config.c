@@ -49,10 +49,6 @@ int save_app_config(void) {
     fprintf(file, "  web_auth_pass: %s\n", app_config.web_auth_pass);
     fprintf(file, "  web_enable_static: %s\n", app_config.web_enable_static ? "true" : "false");
     fprintf(file, "  web_server_thread_stack_size: %d\n", app_config.web_server_thread_stack_size);
-    fprintf(file, "  watchdog: %d\n", app_config.watchdog);
-
-    fprintf(file, "osd:\n");
-    fprintf(file, "  restore: %s\n", app_config.osd_restore ? "true" : "false");
 
     fclose(file);
     return EXIT_SUCCESS;
@@ -65,9 +61,6 @@ enum ConfigError parse_app_config(void) {
     app_config.web_enable_auth = false;
     app_config.web_enable_static = false;
     app_config.web_server_thread_stack_size = 32 * 1024;
-    app_config.watchdog = 0;
-
-    app_config.osd_restore = true;
 
     struct IniConfig ini;
     memset(&ini, 0, sizeof(struct IniConfig));
@@ -102,9 +95,6 @@ enum ConfigError parse_app_config(void) {
         &app_config.web_server_thread_stack_size);
     if (err != CONFIG_OK)
         goto RET_ERR;
-    parse_int(&ini, "system", "watchdog", 0, INT_MAX, &app_config.watchdog);
-
-    parse_bool(&ini, "osd", "restore", &app_config.osd_restore);
 
     free(ini.str);
     return CONFIG_OK;

@@ -18,7 +18,6 @@
 #include "hal/types.h"
 #include "lib/spng.h"
 #include "region.h"
-#include "watchdog.h"
 
 #define IMPORT_BIN(sect, file, sym) asm (\
     ".section " #sect "\n"                  /* Change section */\

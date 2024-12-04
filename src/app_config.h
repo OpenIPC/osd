@@ -17,9 +17,6 @@ struct AppConfig {
     char web_auth_pass[32];
     bool web_enable_static;
     unsigned int web_server_thread_stack_size;
-    unsigned int watchdog;
-
-    bool osd_restore;
 };
 
 extern struct AppConfig app_config;

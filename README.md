@@ -1,11 +1,13 @@
 ![OpenIPC logo][logo]
 
+
 ## OSD
 
 An all-in-one daemon that exposes an HTTP frontend to
 - adjust settings ;
 - manage OSD regions ;
 - stream AV content on supported IP cameras
+
 
 ### Installation
 
@@ -23,6 +25,7 @@ make BOARD=ssc338q_lite br-osd-openipc
 make BOARD=gk7205v200_lite br-osd-openipc
 make BOARD=hi3516ev300_lite br-osd-openipc
 ```
+
 
 ### Examples
 
@@ -61,11 +64,17 @@ UTC date and time can be set using Unix timestamps:
 curl 192.168.1.17:9000/api/time?ts=1712320920
 ```
 
-Bitmap files (.bmp) can be uploaded to a region using this command:
+24- and 32-bit bitmap files (.bmp) can be uploaded to a region using this command:
 ```
 curl -F data=@.\Desktop\myimage.bmp 192.168.1.17:9000/api/osd/3
 ```
 N.B. curl already implies "-X POST" when passing a file with "-F"
+
+
+### Disclaimer
+
+This software is provided AS IS and for research purposes only. OpenIPC shall not be liable for any loss or damage caused by the use of these files or the use of, or reliance upon, any information contained within this project.
+
 
 ### Technical support and donations
 

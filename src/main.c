@@ -1,7 +1,6 @@
 #include "app_config.h"
 #include "hal/macros.h"
 #include "server.h"
-#include "watchdog.h"
 
 #include <getopt.h>
 #include <signal.h>
@@ -49,9 +48,6 @@ int main(int argc, char *argv[]) {
     if (parse_app_config() != CONFIG_OK)
         HAL_ERROR("hal", "Can't load app config 'osd.yaml'\n");
 
-    if (app_config.watchdog)
-        watchdog_start(app_config.watchdog);
-
     switch (plat) {
         case HAL_PLATFORM_I6:  i6_hal_init(); break;
         case HAL_PLATFORM_I6C: i6c_hal_init(); break;
@@ -67,7 +63,6 @@ int main(int argc, char *argv[]) {
     start_region_handler();
 
     while (keepRunning) {
-        watchdog_reset();
         sleep(1);
     }
 
@@ -84,9 +79,6 @@ int main(int argc, char *argv[]) {
         case HAL_PLATFORM_V3:  v3_hal_deinit(); break;
         case HAL_PLATFORM_V4:  v4_hal_deinit(); break;
     }
-
-    if (app_config.watchdog)
-        watchdog_stop();
 
     if (!graceful)
         restore_app_config();
