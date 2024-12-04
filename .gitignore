@@ -1,3 +1,6 @@
-/firmware
+/.vscode/settings.json
+/obj
+/.previous
+/src/**/*.o
 /toolchain
-/osd/osd-*
+osd

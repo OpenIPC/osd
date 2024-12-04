@@ -72,4 +72,3 @@ N.B. curl already implies "-X POST" when passing a file with "-F"
 Please **_[support our project](https://openipc.org/support-open-source)_** with donations or orders for development or maintenance. Thank you!
 
 [logo]: https://openipc.org/assets/openipc-logo-black.svg
-
