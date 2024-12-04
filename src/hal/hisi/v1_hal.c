@@ -33,6 +33,9 @@ int v1_region_create(char handle, hal_rect rect, short opacity)
     v1_rgn_cnf region, regionCurr;
     v1_rgn_chn attrib, attribCurr;
 
+    rect.height += rect.height & 1;
+    rect.width += rect.width & 1;
+
     memset(&region, 0, sizeof(region));
     region.type = V1_RGN_TYPE_OVERLAY;
     region.overlay.pixFmt = V1_PIXFMT_ARGB1555;
