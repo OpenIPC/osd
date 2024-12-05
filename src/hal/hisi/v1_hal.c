@@ -3,7 +3,7 @@
 v1_rgn_impl     v1_rgn;
 v1_sys_impl     v1_sys;
 
-char _v1_venc_dev = 0;
+char _v1_vpss_grp = 0;
 
 void v1_hal_deinit(void)
 {
@@ -27,7 +27,7 @@ int v1_region_create(char handle, hal_rect rect, short opacity)
 {
     int ret;
 
-    v1_sys_bind dest = { .module = V1_SYS_MOD_VENC, .device = _v1_venc_dev };
+    v1_sys_bind dest = { .module = V1_SYS_MOD_GROUP, .device = _v1_vpss_grp };
     v1_rgn_cnf region, regionCurr;
     v1_rgn_chn attrib, attribCurr;
 
@@ -83,7 +83,7 @@ int v1_region_create(char handle, hal_rect rect, short opacity)
 
 void v1_region_destroy(char handle)
 {
-    v1_sys_bind dest = { .module = V1_SYS_MOD_VENC, .device = _v1_venc_dev };
+    v1_sys_bind dest = { .module = V1_SYS_MOD_GROUP, .device = _v1_vpss_grp };
     
     for (dest.channel = 0; dest.channel < 2; dest.channel++)
         v1_rgn.fnDetachChannel(handle, &dest);
