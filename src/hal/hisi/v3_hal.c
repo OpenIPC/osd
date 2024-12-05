@@ -27,8 +27,7 @@ int v3_region_create(char handle, hal_rect rect, short opacity)
 {
     int ret;
 
-    v3_sys_bind channel = { .module = V3_SYS_MOD_VENC,
-        .device = _v3_venc_dev, .channel = 0 };
+    v3_sys_bind dest = { .module = V3_SYS_MOD_VENC, .device = _v3_venc_dev };
     v3_rgn_cnf region, regionCurr;
     v3_rgn_chn attrib, attribCurr;
 
@@ -46,22 +45,26 @@ int v3_region_create(char handle, hal_rect rect, short opacity)
         HAL_INFO("v3_rgn", "Creating region %d...\n", handle);
         if (ret = v3_rgn.fnCreateRegion(handle, &region))
             return ret;
-    } else if (regionCurr.overlay.size.height != region.overlay.size.height || 
+    } else if (regionCurr.type != region.type ||
+        regionCurr.overlay.size.height != region.overlay.size.height || 
         regionCurr.overlay.size.width != region.overlay.size.width) {
         HAL_INFO("v3_rgn", "Parameters are different, recreating "
             "region %d...\n", handle);
-        v3_rgn.fnDetachChannel(handle, &channel);
+        for (dest.channel = 0; dest.channel < 2; dest.channel++)
+            v3_rgn.fnDetachChannel(handle, &dest);
         v3_rgn.fnDestroyRegion(handle);
         if (ret = v3_rgn.fnCreateRegion(handle, &region))
             return ret;
     }
 
-    if (v3_rgn.fnGetChannelConfig(handle, &channel, &attribCurr))
+    if (v3_rgn.fnGetChannelConfig(handle, &dest, &attribCurr))
         HAL_INFO("v3_rgn", "Attaching region %d...\n", handle);
-    else if (attribCurr.overlay.point.x != rect.x || attribCurr.overlay.point.x != rect.y) {
+    else if (attribCurr.overlay.point.x != rect.x ||
+        attribCurr.overlay.point.x != rect.y) {
         HAL_INFO("v3_rgn", "Position has changed, reattaching "
             "region %d...\n", handle);
-        v3_rgn.fnDetachChannel(handle, &channel);
+        for (dest.channel = 0; dest.channel < 2; dest.channel++)
+            v3_rgn.fnDetachChannel(handle, &dest);
     }
 
     memset(&attrib, 0, sizeof(attrib));
@@ -73,17 +76,18 @@ int v3_region_create(char handle, hal_rect rect, short opacity)
     attrib.overlay.point.y = rect.y;
     attrib.overlay.layer = 7;
 
-    v3_rgn.fnAttachChannel(handle, &channel, &attrib);
+    for (dest.channel = 0; dest.channel < 2; dest.channel++)
+        v3_rgn.fnAttachChannel(handle, &dest, &attrib);
 
     return EXIT_SUCCESS;
 }
 
 void v3_region_destroy(char handle)
 {
-    v3_sys_bind channel = { .module = V3_SYS_MOD_VENC,
-        .device = _v3_venc_dev, .channel = 0 };
-    
-    v3_rgn.fnDetachChannel(handle, &channel);
+    v3_sys_bind dest = { .module = V3_SYS_MOD_VENC, .device = _v3_venc_dev };
+
+    for (dest.channel = 0; dest.channel < 2; dest.channel++)
+        v3_rgn.fnDetachChannel(handle, &dest);
     v3_rgn.fnDestroyRegion(handle);
 }
 

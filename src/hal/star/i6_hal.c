@@ -28,8 +28,8 @@ int i6_region_create(char handle, hal_rect rect, short opacity)
 {
     int ret;
 
-    i6_sys_bind channel = { .module = 0,
-        .device = _i6_vpe_dev, .channel = _i6_vpe_chn };
+    i6_sys_bind dest = { .module = 0, .device = _i6_vpe_dev,
+        .channel = _i6_vpe_chn };
     i6_rgn_cnf region, regionCurr;
     i6_rgn_chn attrib, attribCurr;
 
@@ -42,29 +42,26 @@ int i6_region_create(char handle, hal_rect rect, short opacity)
         HAL_INFO("i6_rgn", "Creating region %d...\n", handle);
         if (ret = i6_rgn.fnCreateRegion(handle, &region))
             return ret;
-    } else if (regionCurr.size.height != region.size.height || 
+    } else if (regionCurr.type != region.type ||
+        regionCurr.size.height != region.size.height || 
         regionCurr.size.width != region.size.width) {
         HAL_INFO("i6_rgn", "Parameters are different, recreating "
             "region %d...\n", handle);
-        for (char i = 0; i < I6_VENC_CHN_NUM; i++) {
-            channel.port = i;
-            i6_rgn.fnDetachChannel(handle, &channel);
-        }
+        for (dest.port = 0; dest.port < 2; dest.port++)
+            i6_rgn.fnDetachChannel(handle, &dest);
         i6_rgn.fnDestroyRegion(handle);
         if (ret = i6_rgn.fnCreateRegion(handle, &region))
             return ret;
     }
 
-    if (i6_rgn.fnGetChannelConfig(handle, &channel, &attribCurr))
+    if (i6_rgn.fnGetChannelConfig(handle, &dest, &attribCurr))
         HAL_INFO("i6_rgn", "Attaching region %d...\n", handle);
     else if (attribCurr.point.x != rect.x || attribCurr.point.x != rect.y ||
         attribCurr.osd.bgFgAlpha[1] != opacity) {
         HAL_INFO("i6_rgn", "Parameters are different, reattaching "
             "region %d...\n", handle);
-        for (char i = 0; i < I6_VENC_CHN_NUM; i++) {
-            channel.port = i;
-            i6_rgn.fnDetachChannel(handle, &channel);
-        }
+        for (dest.port = 0; dest.port < 2; dest.port++)
+            i6_rgn.fnDetachChannel(handle, &dest);
     }
 
     memset(&attrib, 0, sizeof(attrib));
@@ -76,10 +73,8 @@ int i6_region_create(char handle, hal_rect rect, short opacity)
     attrib.osd.bgFgAlpha[0] = 0;
     attrib.osd.bgFgAlpha[1] = opacity;
 
-    for (char i = 0; i < I6_VENC_CHN_NUM; i++) {
-        channel.port = i;
-        i6_rgn.fnAttachChannel(handle, &channel, &attrib);
-    }
+    for (dest.port = 0; dest.port < 2; dest.port++)
+        i6_rgn.fnAttachChannel(handle, &dest, &attrib);
 
     return EXIT_SUCCESS;
 }
@@ -91,13 +86,11 @@ void i6_region_deinit(void)
 
 void i6_region_destroy(char handle)
 {
-    i6_sys_bind channel = { .module = 0,
-        .device = _i6_vpe_dev, .channel = _i6_vpe_chn };
+    i6_sys_bind dest = { .module = 0, .device = _i6_vpe_dev,
+        .channel = _i6_vpe_chn };
     
-    channel.port = 1;
-    i6_rgn.fnDetachChannel(handle, &channel);
-    channel.port = 0;
-    i6_rgn.fnDetachChannel(handle, &channel);
+    for (dest.port = 0; dest.port < 2; dest.port++)
+        i6_rgn.fnDetachChannel(handle, &dest);
     i6_rgn.fnDestroyRegion(handle);
 }
 
