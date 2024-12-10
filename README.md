@@ -64,7 +64,7 @@ UTC date and time can be set using Unix timestamps:
 curl 192.168.1.17:9000/api/time?ts=1712320920
 ```
 
-24- and 32-bit bitmap files (.bmp) can be uploaded to a region using this command:
+24-, 32-bit bitmap files (.bmp) and PNG files (.png) can be uploaded to a region using this command:
 ```
 curl -F data=@.\Desktop\myimage.bmp 192.168.1.17:9000/api/osd/3
 ```
