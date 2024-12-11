@@ -20,7 +20,4 @@ int v4_region_create(char handle, hal_rect rect, short opacity);
 void v4_region_destroy(char handle);
 int v4_region_setbitmap(int handle, hal_bitmap *bitmap);
 
-int v4_system_calculate_block(short width, short height, v4_common_pixfmt pixFmt,
-    unsigned int alignWidth);
-void v4_system_deinit(void);
-int v4_system_init(char *snrConfig);
+float v4_system_readtemp(void);

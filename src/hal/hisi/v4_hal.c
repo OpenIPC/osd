@@ -99,3 +99,25 @@ int v4_region_setbitmap(int handle, hal_bitmap *bitmap)
 
     return v4_rgn.fnSetBitmap(handle, &nativeBmp);
 }
+
+float v4_system_readtemp(void)
+{
+    char v4a_device = 0;
+    int val, prep;
+    float result = 0.0 / 0.0;
+
+    if (EQUALS(chip, "Hi3516AV300") ||
+        EQUALS(chip, "Hi3516DV300") ||
+        EQUALS(chip, "Hi3516CV500"))
+        v4a_device = 1;
+
+    prep = v4a_device ? 0x60fa0000 : 0xc3200000;
+    if (hal_registry(v4a_device ? 0x120300b4 : 0x120280b4, &val, OP_READ) && prep != val)
+        hal_registry(v4a_device ? 0x120300b4 : 0x120280b4, &prep, OP_WRITE);
+
+    if (!hal_registry(v4a_device ? 0x120300bc : 0x120280bc, &val, OP_READ))
+        return result;
+
+    result = val & ((1 << 10) - 1);
+    return ((result - (v4a_device ? 136 : 117)) / (v4a_device ? 793 : 798)) * 165 - 40;
+}
