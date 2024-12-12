@@ -7,7 +7,7 @@
 #include "hisi/v4_hal.h"
 #include "star/i6_hal.h"
 #include "star/i6c_hal.h"
-#include "star/i6f_hal.h"
+#include "star/m6_hal.h"
 
 #include <linux/version.h>
 #include <stdbool.h>
