@@ -84,8 +84,8 @@ void hal_identify(void) {
                 break;
             case 0xFB:
                 plat = HAL_PLATFORM_M6;
-                strcpy(chip, "SSC379G");
-                strcpy(family, "infinity6f");
+                strcpy(chip, "SSC359G");
+                strcpy(family, "mercury6");
                 chnCount = M6_VENC_CHN_NUM;
                 break;
             default:
