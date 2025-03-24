@@ -50,6 +50,17 @@ int save_app_config(void) {
     fprintf(file, "  web_enable_static: %s\n", app_config.web_enable_static ? "true" : "false");
     fprintf(file, "  web_server_thread_stack_size: %d\n", app_config.web_server_thread_stack_size);
 
+    for (char i = 0; i < MAX_OSD; i++) {
+        fprintf(file, "osd%d:\n", i);
+        fprintf(file, "  text: %s\n", osds[i].text);
+        fprintf(file, "  font: %s\n", osds[i].font);
+        fprintf(file, "  opal: %d\n", osds[i].opal);
+        fprintf(file, "  posx: %d\n", osds[i].posx);
+        fprintf(file, "  posy: %d\n", osds[i].posy);
+        fprintf(file, "  size: %.1f\n", osds[i].size);
+        fprintf(file, "  color: %#04x\n", osds[i].color);
+    }
+
     fclose(file);
     return EXIT_SUCCESS;
 }
@@ -95,6 +106,22 @@ enum ConfigError parse_app_config(void) {
         &app_config.web_server_thread_stack_size);
     if (err != CONFIG_OK)
         goto RET_ERR;
+
+    for (char i = 0; i < MAX_OSD; i++) {
+        char param[8];
+        int val;
+        sprintf(param, "osd%d", i);
+        parse_param_value(&ini, param, "text", osds[i].text);
+        parse_param_value(&ini, param, "font", osds[i].font);
+        err = parse_int(&ini, param, "opal", 0, 255, val);
+        if (err == CONFIG_OK) osds[i].opal = (unsigned char)val;
+        err = parse_int(&ini, param, "posx", 0, SHRT_MAX, &val);
+        if (err == CONFIG_OK) osds[i].posx = (short)val;
+        err = parse_int(&ini, param, "posy", 0, SHRT_MAX, &val);
+        if (err == CONFIG_OK) osds[i].posy = (short)val;
+        parse_double(&ini, param, "size", 0, INT_MAX, &osds[i].size);
+        parse_int(&ini, param, "color", 0, 0xFFFF, &osds[i].color);
+    }
 
     free(ini.str);
     return CONFIG_OK;

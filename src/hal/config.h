@@ -49,6 +49,9 @@ enum ConfigError parse_enum(
 enum ConfigError parse_bool(
     struct IniConfig *ini, const char *section, const char *param_name,
     bool *bool_value);
+enum ConfigError parse_double(
+    struct IniConfig *ini, const char *section, const char *param_name,
+    const double min, const double max, double *double_value);
 enum ConfigError parse_int(
     struct IniConfig *ini, const char *section, const char *param_name,
     const int min, const int max, int *int_value);

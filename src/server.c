@@ -292,6 +292,7 @@ void respond_request(struct Request *req) {
         char *remain;
         int respLen;
         short id = strtol(req->uri + 9, &remain, 10);
+        char saved = 0;
         if (remain == req->uri + 9 || id < 0 || id >= MAX_OSD) {
             respLen = sprintf(response,
                 "HTTP/1.1 404 Not Found\r\n"
@@ -461,6 +462,15 @@ png_error:
                         osds[id].posy = y;
                     }
                 }
+                else if (EQUALS(key, "save") && 
+                    (EQUALS_CASE(value, "true") || EQUALS(value, "1"))) {
+                    saved = save_app_config();
+                    if (!saved)
+                        HAL_INFO("server", "Configuration saved!\n");
+                    else
+                        HAL_WARNING("server", "Failed to save configuration!\n");
+                    break;
+                }
             }
             osds[id].updt = 1;
         }
@@ -469,8 +479,10 @@ png_error:
             "Content-Type: application/json;charset=UTF-8\r\n"
             "Connection: close\r\n"
             "\r\n"
-            "{\"id\":%d,\"color\":\"%#x\",\"opal\":%d,\"pos\":[%d,%d],\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\"}",
-            id, osds[id].color, osds[id].opal, osds[id].posx, osds[id].posy, osds[id].font, osds[id].size, osds[id].text);
+            "{\"id\":%d,\"color\":\"%#x\",\"opal\":%d,\"pos\":[%d,%d],"
+            "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\",\"saved\":%s}",
+            id, osds[id].color, osds[id].opal, osds[id].posx, osds[id].posy,
+            osds[id].font, osds[id].size, osds[id].text, saved == 0 ? "true" : "false");
         send_and_close(req->clntFd, response, respLen);
         return;
     }
