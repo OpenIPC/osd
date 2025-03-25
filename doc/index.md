@@ -11,8 +11,9 @@ N.B. Ampersands require the address to be enclosed with double quotes under Wind
 
 Supported fonts (sourced from /usr/share/fonts/truetype/) can render Unicode characters:
 ```
-curl http://192.168.1.17/api/osd/0?text=Entrée
+curl http://192.168.1.17/api/osd/0?text=Entrée&save=true
 ```
+N.B. Appending the "save" argument with a non-falsey value will preserve the settings in the persistent config file to be reloaded on the next launch of the daemon
 
 Empty strings are used to clear the regions:
 ```
@@ -37,7 +38,7 @@ UTC date and time can be set using Unix timestamps:
 curl http://192.168.1.17/api/time?ts=1712320920
 ```
 
-24- and 32-bit bitmap files (.bmp) can be uploaded to a region using this command:
+PNG image, 24- and 32-bit bitmap files (.bmp) can be uploaded to a region using this command:
 ```
 curl -F data=@.\Desktop\myimage.bmp http://192.168.1.17/api/osd/3
 ```
