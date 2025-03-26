@@ -113,7 +113,7 @@ enum ConfigError parse_app_config(void) {
         sprintf(param, "osd%d", i);
         parse_param_value(&ini, param, "text", osds[i].text);
         parse_param_value(&ini, param, "font", osds[i].font);
-        err = parse_int(&ini, param, "opal", 0, 255, val);
+        err = parse_int(&ini, param, "opal", 0, 255, &val);
         if (err == CONFIG_OK) osds[i].opal = (unsigned char)val;
         err = parse_int(&ini, param, "posx", 0, SHRT_MAX, &val);
         if (err == CONFIG_OK) osds[i].posx = (short)val;
