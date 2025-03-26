@@ -1,0 +1,40 @@
+name: Build
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build
+        run: |
+          sh build.sh hisi-v4
+          cp osd osd-goke
+          mv osd osd-hisi
+          sh build.sh star6
+          mv osd osd-star6b0
+          sh build.sh star6e
+          mv osd osd-star6e
+
+      - name: Upload
+        if: github.event_name != 'pull_request'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: latest
+          files: |
+            ./osd-goke
+            ./osd-hisi
+            ./osd-star6b0
+            ./osd-star6e
