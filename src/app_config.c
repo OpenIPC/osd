@@ -121,6 +121,7 @@ enum ConfigError parse_app_config(void) {
         if (err == CONFIG_OK) osds[i].posy = (short)val;
         parse_double(&ini, param, "size", 0, INT_MAX, &osds[i].size);
         parse_int(&ini, param, "color", 0, 0xFFFF, &osds[i].color);
+        osds[i].updt = 1;
     }
 
     free(ini.str);
