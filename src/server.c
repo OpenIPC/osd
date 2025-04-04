@@ -499,7 +499,7 @@ png_error:
             "Content-Type: application/json;charset=UTF-8\r\n"
             "Connection: close\r\n"
             "\r\n"
-            "{\"id\":%d,\"color\":\"%#x\",\"opal\":%d,\"pos\":[%d,%d],"
+            "{\"id\":%d,\"color\":\"#%x\",\"opal\":%d,\"pos\":[%d,%d],"
             "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\",\"img\":\"%s\"}",
             id, color, osds[id].opal, osds[id].posx, osds[id].posy,
             osds[id].font, osds[id].size, osds[id].text, osds[id].img);
