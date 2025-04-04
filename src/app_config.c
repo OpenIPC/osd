@@ -44,6 +44,12 @@ int save_app_config(void) {
 
     fprintf(file, "system:\n");
     fprintf(file, "  web_port: %d\n", app_config.web_port);
+    if (app_config.web_whitelist) {
+        fprintf(file, "  web_whitelist: ");
+        for (int i = 0; app_config.web_whitelist[i] && *app_config.web_whitelist[i]; i++) {
+            fprintf(file, "    - %s\n", app_config.web_whitelist[i]);
+        }
+    }
     fprintf(file, "  web_enable_auth: %s\n", app_config.web_enable_auth ? "true" : "false");
     fprintf(file, "  web_auth_user: %s\n", app_config.web_auth_user);
     fprintf(file, "  web_auth_pass: %s\n", app_config.web_auth_pass);
@@ -70,6 +76,7 @@ enum ConfigError parse_app_config(void) {
     memset(&app_config, 0, sizeof(struct AppConfig));
 
     app_config.web_port = 8080;
+    *app_config.web_whitelist[0] = '\0';
     app_config.web_enable_auth = false;
     app_config.web_enable_static = false;
     app_config.web_server_thread_stack_size = 32 * 1024;
@@ -88,11 +95,15 @@ enum ConfigError parse_app_config(void) {
     enum ConfigError err;
     find_sections(&ini);
 
-    int port;
+    int port, count;
     err = parse_int(&ini, "system", "web_port", 1, INT_MAX, &port);
     if (err != CONFIG_OK)
         goto RET_ERR;
     app_config.web_port = (unsigned short)port;
+    parse_list(&ini, "system", "web_whitelist",
+        sizeof(app_config.web_whitelist) / sizeof(*app_config.web_whitelist),
+        &count, app_config.web_whitelist);
+    *app_config.web_whitelist[count] = '\0';
     parse_bool(&ini, "system", "web_enable_auth", &app_config.web_enable_auth);
     parse_param_value(
         &ini, "system", "web_auth_user", app_config.web_auth_user);

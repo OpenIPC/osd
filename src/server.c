@@ -29,6 +29,11 @@ const char error400[] = "HTTP/1.1 400 Bad Request\r\n" \
                         "Connection: close\r\n" \
                         "\r\n" \
                         "The server has no handler to the request.\r\n";
+const char error403[] = "HTTP/1.1 403 Forbidden\r\n" \
+                        "Content-Type: text/plain\r\n" \
+                        "Connection: close\r\n" \
+                        "\r\n" \
+                        "You have been denied access to this resource.\r\n";
 const char error404[] = "HTTP/1.1 404 Not Found\r\n" \
                         "Content-Type: text/plain\r\n" \
                         "Connection: close\r\n" \
@@ -178,18 +183,29 @@ void parse_request(struct Request *req) {
     socklen_t client_sock_len = sizeof(client_sock);
     memset(&client_sock, 0, client_sock_len);
 
+    getpeername(req->clntFd,
+        (struct sockaddr *)&client_sock, &client_sock_len);
+    char *client_ip = inet_ntoa(client_sock.sin_addr);
+
+    if (!EMPTY(*app_config.web_whitelist)) {
+        for (int i = 0; app_config.web_whitelist[i] && *app_config.web_whitelist[i]; i++)
+            if (ip_in_cidr(client_ip, app_config.web_whitelist[i])) goto grant_access;
+        close_socket_fd(req->clntFd);
+        req->clntFd = -1;
+        req->total = 0;
+        return;
+    }
+grant_access:
+
     req->total = 0;
     int received = recv(req->clntFd, req->input, REQSIZE, 0);
     if (received < 0)
-        HAL_WARNING("server", "recv() error\n");
+        HAL_WARNING("server", "Reading from client failed!\n");
     else if (!received)
         HAL_WARNING("server", "Client disconnected unexpectedly\n");
     req->total += received;
 
     if (req->total <= 0) return;
-
-    getpeername(req->clntFd,
-        (struct sockaddr *)&client_sock, &client_sock_len);
 
     char *state = NULL;
     req->method = strtok_r(req->input, " \t\r\n", &state);
@@ -198,7 +214,7 @@ void parse_request(struct Request *req) {
 
     HAL_INFO("server", "\x1b[32mNew request: (%s) %s\n"
         "         Received from: %s\x1b[0m\n",
-        req->method, req->uri, inet_ntoa(client_sock.sin_addr));
+        req->method, req->uri, client_ip);
 
     if (req->query = strchr(req->uri, '?'))
         *req->query++ = '\0';
@@ -230,7 +246,7 @@ void parse_request(struct Request *req) {
     while (l && req->total < req->paysize) {
         received = recv(req->clntFd, req->input + req->total, REQSIZE - req->total, 0);
         if (received < 0) {
-            HAL_WARNING("server", "recv() error\n");
+            HAL_WARNING("server", "Reading from client failed!\n");
             break;
         } else if (!received) {
             HAL_WARNING("server", "Client disconnected unexpectedly\n");
@@ -244,6 +260,8 @@ void parse_request(struct Request *req) {
 
 void respond_request(struct Request *req) {
     char response[256];
+
+    if (req->clntFd < 0) return;
 
     if (!EQUALS(req->method, "GET") && !EQUALS(req->method, "POST")) {
         send_and_close(req->clntFd, (char*)error405, strlen(error405));
@@ -553,7 +571,7 @@ void *server_thread(void *vargp) {
     int ret, server_fd = *((int *)vargp);
     int enable = 1;
     if (setsockopt(server_fd, SOL_SOCKET, SO_REUSEADDR, &enable, sizeof(int)) < 0) {
-        HAL_WARNING("server", "setsockopt(SO_REUSEADDR) failed");
+        HAL_WARNING("server", "Setting socket options failed!\n");
         fflush(stdout);
     }
     struct sockaddr_in client, server = {
@@ -572,7 +590,6 @@ void *server_thread(void *vargp) {
     req.input = malloc(REQSIZE);
 
     while (keepRunning) {
-        // Waiting for a new connection
         if ((req.clntFd = accept(server_fd, NULL, NULL)) == -1)
             break;
 
@@ -595,7 +612,6 @@ int start_server() {
     }
     pthread_mutex_init(&client_fds_mutex, NULL);
 
-    // Start the server and HTTP video streams thread
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
     {
@@ -620,7 +636,6 @@ int start_server() {
 int stop_server() {
     keepRunning = 0;
 
-    // Stop server_thread when server_fd is closed
     close_socket_fd(server_fd);
     pthread_join(server_thread_id, NULL);
 
