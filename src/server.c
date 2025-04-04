@@ -480,9 +480,9 @@ png_error:
             "Connection: close\r\n"
             "\r\n"
             "{\"id\":%d,\"color\":\"%#x\",\"opal\":%d,\"pos\":[%d,%d],"
-            "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\",\"saved\":%s}",
+            "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\"}",
             id, color, osds[id].opal, osds[id].posx, osds[id].posy,
-            osds[id].font, osds[id].size, osds[id].text, saved == 0 ? "true" : "false");
+            osds[id].font, osds[id].size, osds[id].text);
         send_and_close(req->clntFd, response, respLen);
         return;
     }
