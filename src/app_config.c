@@ -64,9 +64,8 @@ int save_app_config(void) {
         fprintf(file, "osd%d:\n", i);
         if (!imgEmpty)
             fprintf(file, "  img: %s\n", osds[i].img);
-        if (textEmpty)
-            continue;
-        fprintf(file, "  text: %s\n", osds[i].text);
+        if (!textEmpty)
+            fprintf(file, "  text: %s\n", osds[i].text);
         fprintf(file, "  font: %s\n", osds[i].font);
         fprintf(file, "  opal: %d\n", osds[i].opal);
         fprintf(file, "  posx: %d\n", osds[i].posx);
