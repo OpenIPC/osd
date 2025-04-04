@@ -442,7 +442,9 @@ png_error:
                 unescape_uri(value);
                 char *key = split(&value, "=");
                 if (!key || !*key || !value || !*value) continue;
-                if (EQUALS(key, "font"))
+                if (EQUALS(key, "img"))
+                    strcpy(osds[id].img, value);
+                else if (EQUALS(key, "font"))
                     strcpy(osds[id].font, !EMPTY(value) ? value : DEF_FONT);
                 else if (EQUALS(key, "text"))
                     strcpy(osds[id].text, value);
@@ -498,9 +500,9 @@ png_error:
             "Connection: close\r\n"
             "\r\n"
             "{\"id\":%d,\"color\":\"%#x\",\"opal\":%d,\"pos\":[%d,%d],"
-            "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\"}",
+            "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\",\"img\":\"%s\"}",
             id, color, osds[id].opal, osds[id].posx, osds[id].posy,
-            osds[id].font, osds[id].size, osds[id].text);
+            osds[id].font, osds[id].size, osds[id].text, osds[id].img);
         send_and_close(req->clntFd, response, respLen);
         return;
     }

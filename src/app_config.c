@@ -57,8 +57,15 @@ int save_app_config(void) {
     fprintf(file, "  web_server_thread_stack_size: %d\n", app_config.web_server_thread_stack_size);
 
     for (char i = 0; i < MAX_OSD; i++) {
-        if (EMPTY(osds[i].text)) continue;
+        char imgEmpty = EMPTY(osds[i].img);
+        char textEmpty = EMPTY(osds[i].text);
+        if (imgEmpty && textEmpty) continue;
+    
         fprintf(file, "osd%d:\n", i);
+        if (!imgEmpty)
+            fprintf(file, "  img: %s\n", osds[i].img);
+        if (textEmpty)
+            continue;
         fprintf(file, "  text: %s\n", osds[i].text);
         fprintf(file, "  font: %s\n", osds[i].font);
         fprintf(file, "  opal: %d\n", osds[i].opal);
@@ -123,6 +130,7 @@ enum ConfigError parse_app_config(void) {
         char param[8];
         int val;
         sprintf(param, "osd%d", i);
+        parse_param_value(&ini, param, "img", osds[i].img);
         parse_param_value(&ini, param, "text", osds[i].text);
         parse_param_value(&ini, param, "font", osds[i].font);
         err = parse_int(&ini, param, "opal", 0, 255, &val);
