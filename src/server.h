@@ -16,7 +16,6 @@
 
 #include "app_config.h"
 #include "hal/types.h"
-#include "lib/spng.h"
 #include "region.h"
 
 #define IMPORT_BIN(sect, file, sym) asm (\
