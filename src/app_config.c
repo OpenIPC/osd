@@ -51,6 +51,7 @@ int save_app_config(void) {
     fprintf(file, "  web_server_thread_stack_size: %d\n", app_config.web_server_thread_stack_size);
 
     for (char i = 0; i < MAX_OSD; i++) {
+        if (EMPTY(osds[i].text)) continue;
         fprintf(file, "osd%d:\n", i);
         fprintf(file, "  text: %s\n", osds[i].text);
         fprintf(file, "  font: %s\n", osds[i].font);
