@@ -306,6 +306,37 @@ void respond_request(struct Request *req) {
         return;
     }
 
+    if (EQUALS(req->uri, "/api/cmd")) {
+        int result = -1;
+        if (!EMPTY(req->query)) {
+            char *remain;
+            while (req->query) {
+                char *value = split(&req->query, "&");
+                if (!value || !*value) continue;
+                unescape_uri(value);
+                char *key = split(&value, "=");
+                if (!key || !*key) continue;
+                if (EQUALS(key, "save")) {
+                    result = save_app_config();
+                    if (!result)
+                        HAL_INFO("server", "Configuration saved!\n");
+                    else
+                        HAL_WARNING("server", "Failed to save configuration!\n");
+                    break;
+                }
+            }
+        }
+
+        int respLen = sprintf(response,
+            "HTTP/1.1 200 OK\r\n"
+            "Content-Type: application/json;charset=UTF-8\r\n"
+            "Connection: close\r\n"
+            "\r\n"
+            "{\"code\":%d}", result);
+        send_and_close(req->clntFd, response, respLen);
+        return;
+    }
+
     if (STARTS_WITH(req->uri, "/api/osd/")) {
         char *remain;
         int respLen;
