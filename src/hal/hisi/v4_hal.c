@@ -1,3 +1,5 @@
+#if defined(__ARM_PCS)
+
 #include "v4_hal.h"
 
 v4_rgn_impl     v4_rgn;
@@ -121,3 +123,5 @@ float v4_system_readtemp(void)
     result = val & ((1 << 10) - 1);
     return ((result - (v4a_device ? 136 : 117)) / (v4a_device ? 793 : 798)) * 165 - 40;
 }
+
+#endif

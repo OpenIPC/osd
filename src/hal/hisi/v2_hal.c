@@ -1,3 +1,5 @@
+#if defined(__ARM_PCS)
+
 #include "v2_hal.h"
 
 v2_rgn_impl     v2_rgn;
@@ -110,3 +112,5 @@ float v2_system_readtemp(void)
     result = val & ((1 << 8) - 1);
     return ((result * 180) / 256) - 40;
 }
+
+#endif

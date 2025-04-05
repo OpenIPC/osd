@@ -1,3 +1,5 @@
+#if defined(__ARM_PCS)
+
 #include "v3_hal.h"
 
 v3_rgn_impl     v3_rgn;
@@ -120,3 +122,5 @@ float v3_system_readtemp(void)
     result = val & ((1 << 10) - 1);
     return ((result - 125) / 806) * 165 - 40;
 }
+
+#endif

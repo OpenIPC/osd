@@ -1,3 +1,5 @@
+#if defined(__ARM_PCS_VFP)
+
 #include "i6_hal.h"
 
 i6_rgn_impl  i6_rgn;
@@ -107,3 +109,5 @@ int i6_region_setbitmap(int handle, hal_bitmap *bitmap)
 
     return i6_rgn.fnSetBitmap(handle, &nativeBmp);
 }
+
+#endif

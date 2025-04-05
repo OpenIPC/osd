@@ -1,3 +1,5 @@
+#if defined(__ARM_PCS_VFP)
+
 #include "m6_hal.h"
 
 m6_rgn_impl  m6_rgn;
@@ -121,3 +123,5 @@ int m6_region_setbitmap(int handle, hal_bitmap *bitmap)
 
     return m6_rgn.fnSetBitmap(0, handle, &nativeBmp);
 }
+
+#endif

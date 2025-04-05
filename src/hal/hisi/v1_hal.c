@@ -1,3 +1,5 @@
+#if defined(__ARM_PCS)
+
 #include "v1_hal.h"
 
 v1_rgn_impl     v1_rgn;
@@ -97,3 +99,5 @@ int v1_region_setbitmap(int handle, hal_bitmap *bitmap)
 
     return v1_rgn.fnSetBitmap(handle, &nativeBmp);
 }
+
+#endif

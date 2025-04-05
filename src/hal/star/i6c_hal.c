@@ -1,3 +1,5 @@
+#if defined(__ARM_PCS_VFP)
+
 #include "i6c_hal.h"
 
 i6c_rgn_impl  i6c_rgn;
@@ -121,3 +123,5 @@ int i6c_region_setbitmap(int handle, hal_bitmap *bitmap)
 
     return i6c_rgn.fnSetBitmap(0, handle, &nativeBmp);
 }
+
+#endif

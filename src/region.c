@@ -79,6 +79,7 @@ void region_fill_formatted(char* str) {
             char s[8];
             float t = 0.0 / 0.0;
             switch (plat) {
+#if defined(__ARM_PCS_VFP)
             case HAL_PLATFORM_I6:
             case HAL_PLATFORM_I6C:
             case HAL_PLATFORM_M6:
@@ -93,9 +94,11 @@ void region_fill_formatted(char* str) {
                 }
                 break;
             }
+#elif defined(__ARM_PCS)
             case HAL_PLATFORM_V2:  t = v2_system_readtemp(); break;
             case HAL_PLATFORM_V3:  t = v3_system_readtemp(); break;
             case HAL_PLATFORM_V4:  t = v4_system_readtemp(); break;
+#endif
             }
             sprintf(s, "%.1f", t);
             strcat(out, s);
@@ -331,9 +334,11 @@ int region_prepare_bitmap(char *path, hal_bitmap *bitmap) {
 
 void *region_thread(void) {
     switch (plat) {
+#if defined(__ARM_PCS_VFP)
         case HAL_PLATFORM_I6:  i6_region_init(); break;
         case HAL_PLATFORM_I6C: i6c_region_init(); break;
         case HAL_PLATFORM_M6:  m6_region_init(); break;
+#endif
     }
 
     for (char id = 0; id < MAX_OSD; id++)
@@ -384,6 +389,7 @@ found_font:;
                     hal_rect rect = { .height = bitmap.dim.height, .width = bitmap.dim.width,
                         .x = osds[id].posx, .y = osds[id].posy };
                     switch (plat) {
+#if defined(__ARM_PCS_VFP)
                         case HAL_PLATFORM_I6:
                             i6_region_create(id, rect, osds[id].opal);
                             i6_region_setbitmap(id, &bitmap);
@@ -396,6 +402,7 @@ found_font:;
                             m6_region_create(id, rect, osds[id].opal);
                             m6_region_setbitmap(id, &bitmap);
                             break;
+#elif defined(__ARM_PCS)
                         case HAL_PLATFORM_V1:
                             v1_region_create(id, rect, osds[id].opal);
                             v1_region_setbitmap(id, &bitmap);
@@ -412,6 +419,7 @@ found_font:;
                             v4_region_create(id, rect, osds[id].opal);
                             v4_region_setbitmap(id, &bitmap);
                             break;
+#endif
                     }
                     free(bitmap.data);
                 }
@@ -435,6 +443,7 @@ found_font:;
                         hal_rect rect = { .height = bitmap.dim.height, .width = bitmap.dim.width,
                             .x = osds[id].posx, .y = osds[id].posy };
                         switch (plat) {
+#if defined(__ARM_PCS_VFP)
                             case HAL_PLATFORM_I6:
                                 i6_region_create(id, rect, osds[id].opal);
                                 i6_region_setbitmap(id, &bitmap);
@@ -447,6 +456,7 @@ found_font:;
                                 m6_region_create(id, rect, osds[id].opal);
                                 m6_region_setbitmap(id, &bitmap);
                                 break;
+#elif defined(__ARM_PCS)
                             case HAL_PLATFORM_V1:
                                 v1_region_create(id, rect, osds[id].opal);
                                 v1_region_setbitmap(id, &bitmap);
@@ -463,19 +473,23 @@ found_font:;
                                 v4_region_create(id, rect, osds[id].opal);
                                 v4_region_setbitmap(id, &bitmap);
                                 break;
+#endif
                         }
                         free(bitmap.data);
                     }
                 }
                 else
                     switch (plat) {
+#if defined(__ARM_PCS_VFP)
                         case HAL_PLATFORM_I6:  i6_region_destroy(id); break;
                         case HAL_PLATFORM_I6C: i6c_region_destroy(id); break;
                         case HAL_PLATFORM_M6:  m6_region_destroy(id); break;
+#elif defined(__ARM_PCS)
                         case HAL_PLATFORM_V1:  v1_region_destroy(id); break;
                         case HAL_PLATFORM_V2:  v2_region_destroy(id); break;
                         case HAL_PLATFORM_V3:  v3_region_destroy(id); break;
                         case HAL_PLATFORM_V4:  v4_region_destroy(id); break;
+#endif
                     }
             }
             osds[id].updt = 0;
@@ -484,9 +498,11 @@ found_font:;
     }
 
     switch (plat) {
+#if defined(__ARM_PCS_VFP)
         case HAL_PLATFORM_I6:  i6_region_deinit(); break;
         case HAL_PLATFORM_I6C: i6c_region_deinit(); break;
         case HAL_PLATFORM_M6:  m6_region_deinit(); break;
+#endif
     }
 }
 

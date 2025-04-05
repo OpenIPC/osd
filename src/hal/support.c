@@ -13,6 +13,7 @@ void hal_identify(void) {
     char *endMark;
     char line[200] = {0};
 
+#if defined(__ARM_PCS_VFP)
     if (!access("/proc/mi_modules", F_OK) && 
         hal_registry(0x1F003C00, &series, OP_READ)) {
         char package[4] = {0};
@@ -93,7 +94,9 @@ void hal_identify(void) {
                 break;
         }
     }
+#endif
 
+#if defined(__ARM_PCS)
     if (file = fopen("/proc/iomem", "r")) {
         while (fgets(line, 200, file))
             if (strstr(line, "uart")) {
@@ -177,4 +180,5 @@ void hal_identify(void) {
     plat = HAL_PLATFORM_V4;
     strcpy(family, "hisi-gen4");
     chnCount = V4_VENC_CHN_NUM;
+#endif
 }
