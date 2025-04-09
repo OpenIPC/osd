@@ -55,6 +55,8 @@ int save_app_config(void) {
     fprintf(file, "  web_auth_pass: %s\n", app_config.web_auth_pass);
     fprintf(file, "  web_enable_static: %s\n", app_config.web_enable_static ? "true" : "false");
     fprintf(file, "  web_server_thread_stack_size: %d\n", app_config.web_server_thread_stack_size);
+    if (!EMPTY(timefmt) || EQUALS(timefmt, DEF_TIMEFMT))
+        fprintf(file, "  time_format: %s\n", timefmt);
 
     for (char i = 0; i < MAX_OSD; i++) {
         char imgEmpty = EMPTY(osds[i].img);
@@ -124,6 +126,9 @@ enum ConfigError parse_app_config(void) {
         &app_config.web_server_thread_stack_size);
     if (err != CONFIG_OK)
         goto RET_ERR;
+    parse_param_value(&ini, "system", "time_format", timefmt);
+    if (EMPTY(timefmt))
+        strcpy(timefmt, DEF_TIMEFMT);
 
     for (char i = 0; i < MAX_OSD; i++) {
         char param[8];
