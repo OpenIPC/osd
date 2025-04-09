@@ -5,3 +5,4 @@ system:
   web_auth_pass: 12345
   web_enable_static: false
   web_server_thread_stack_size: 65536
+  time_format: %Y-%m-%d %H:%M:%S
