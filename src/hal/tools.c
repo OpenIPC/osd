@@ -1,6 +1,6 @@
 #include "tools.h"
 
-static const char basis_64[] =
+static const char base64_table[] =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
 
 int base64_encode_length(int len) { return ((len + 2) / 3 * 4) + 1; }
@@ -11,22 +11,22 @@ int base64_encode(char *encoded, const char *string, int len) {
 
     p = encoded;
     for (i = 0; i < len - 2; i += 3) {
-        *p++ = basis_64[(string[i] >> 2) & 0x3F];
-        *p++ = basis_64
+        *p++ = base64_table[(string[i] >> 2) & 0x3F];
+        *p++ = base64_table
             [((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
-        *p++ = basis_64
+        *p++ = base64_table
             [((string[i + 1] & 0xF) << 2) | ((int)(string[i + 2] & 0xC0) >> 6)];
-        *p++ = basis_64[string[i + 2] & 0x3F];
+        *p++ = base64_table[string[i + 2] & 0x3F];
     }
     if (i < len) {
-        *p++ = basis_64[(string[i] >> 2) & 0x3F];
+        *p++ = base64_table[(string[i] >> 2) & 0x3F];
         if (i == (len - 1)) {
-            *p++ = basis_64[((string[i] & 0x3) << 4)];
+            *p++ = base64_table[((string[i] & 0x3) << 4)];
             *p++ = '=';
         } else {
-            *p++ = basis_64
+            *p++ = base64_table
                 [((string[i] & 0x3) << 4) | ((int)(string[i + 1] & 0xF0) >> 4)];
-            *p++ = basis_64[((string[i + 1] & 0xF) << 2)];
+            *p++ = base64_table[((string[i + 1] & 0xF) << 2)];
         }
         *p++ = '=';
     }

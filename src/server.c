@@ -491,6 +491,7 @@ void respond_request(struct Request *req) {
 
     if (EQUALS(req->uri, "/api/time")) {
         struct timespec t;
+        char saved = 0;
         if (!EMPTY(req->query)) {
             char *remain;
             while (req->query) {
@@ -506,6 +507,15 @@ void respond_request(struct Request *req) {
                     if (remain == value) continue;
                     t.tv_sec = result;
                     clock_settime(0, &t);
+                }
+                else if (EQUALS(key, "save") && 
+                    (EQUALS_CASE(value, "true") || EQUALS(value, "1"))) {
+                    saved = save_app_config();
+                    if (!saved)
+                        HAL_INFO("server", "Configuration saved!\n");
+                    else
+                        HAL_WARNING("server", "Failed to save configuration!\n");
+                    break;
                 }
             }
         }
