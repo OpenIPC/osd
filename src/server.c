@@ -507,8 +507,7 @@ void respond_request(struct Request *req) {
                     if (remain == value) continue;
                     t.tv_sec = result;
                     clock_settime(0, &t);
-                }
-                else if (EQUALS(key, "save") && 
+                } else if (EQUALS(key, "save") && 
                     (EQUALS_CASE(value, "true") || EQUALS(value, "1"))) {
                     saved = save_app_config();
                     if (!saved)
