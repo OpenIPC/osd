@@ -354,6 +354,8 @@ void *region_thread(void) {
         osds[id].size = DEF_SIZE;
         osds[id].posx = DEF_POSX;
         osds[id].posy = DEF_POSY + (DEF_SIZE * 3 / 2) * id;
+        osds[id].outl = DEF_OUTL;
+        osds[id].thick = DEF_THICK;
         osds[id].updt = 0;
         strcpy(osds[id].font, DEF_FONT);
         osds[id].text[0] = '\0';
@@ -389,7 +391,8 @@ void *region_thread(void) {
                     HAL_DANGER("region", "Font \"%s\" not found!\n", osds[id].font);
                     continue;
 found_font:;
-                    hal_bitmap bitmap = text_create_rendered(font, osds[id].size, out, osds[id].color);
+                    hal_bitmap bitmap = text_create_rendered(font, osds[id].size, out, osds[id].color,
+                        osds[id].outl, osds[id].thick);
                     hal_rect rect = { .height = bitmap.dim.height, .width = bitmap.dim.width,
                         .x = osds[id].posx, .y = osds[id].posy };
                     switch (plat) {

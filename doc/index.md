@@ -15,6 +15,12 @@ curl http://192.168.1.17/api/osd/0?text=Entrée&save=true
 ```
 N.B. Appending the "save" argument with a non-falsey value will preserve the settings in the persistent config file to be reloaded on the next launch of the daemon
 
+The text color is configurable (using a hexadecimal RGB555 representation) and can be made easier to read by applying an outline this way:
+```
+curl http://192.168.1.17/api/osd/1?color=%23FFFF&outl=%238000&thick=1.0
+```
+N.B. Hashtags have to be espaced with %23 in curl URL syntaxes
+
 Empty strings are used to clear the regions:
 ```
 curl http://192.168.1.17/api/osd/1?text=

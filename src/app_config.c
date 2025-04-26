@@ -74,6 +74,8 @@ int save_app_config(void) {
         fprintf(file, "  posy: %d\n", osds[i].posy);
         fprintf(file, "  size: %.1f\n", osds[i].size);
         fprintf(file, "  color: %#04x\n", osds[i].color);
+        fprintf(file, "  outl: %#04x\n", osds[i].outl);
+        fprintf(file, "  thick: %.1f\n", osds[i].thick);
     }
 
     fclose(file);
@@ -145,6 +147,8 @@ enum ConfigError parse_app_config(void) {
         if (err == CONFIG_OK) osds[i].posy = (short)val;
         parse_double(&ini, param, "size", 0, INT_MAX, &osds[i].size);
         parse_int(&ini, param, "color", 0, 0xFFFF, &osds[i].color);
+        parse_int(&ini, param, "outl", 0, 0xFFFF, &osds[i].outl);
+        parse_double(&ini, param, "thick", 0, UCHAR_MAX, &osds[i].thick);
         osds[i].updt = 1;
     }
 

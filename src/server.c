@@ -437,6 +437,15 @@ void respond_request(struct Request *req) {
                         osds[id].posy = y;
                     }
                 }
+                else if (EQUALS(key, "outl")) {
+                    int result = color_parse(value);
+                    osds[id].outl = result;
+                }
+                else if (EQUALS(key, "thick")) {
+                    double result = strtod(value, &remain);
+                    if (remain == value) continue;
+                        osds[id].thick = result;
+                }
                 else if (EQUALS(key, "save") && 
                     (EQUALS_CASE(value, "true") || EQUALS(value, "1"))) {
                     saved = save_app_config();
@@ -458,9 +467,11 @@ void respond_request(struct Request *req) {
             "Connection: close\r\n"
             "\r\n"
             "{\"id\":%d,\"color\":\"#%x\",\"opal\":%d,\"pos\":[%d,%d],"
-            "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\",\"img\":\"%s\"}",
+            "\"font\":\"%s\",\"size\":%.1f,\"text\":\"%s\",\"img\":\"%s\","
+            "\"outl\":\"#%x\",\"thick\":%.1f}",
             id, color, osds[id].opal, osds[id].posx, osds[id].posy,
-            osds[id].font, osds[id].size, osds[id].text, osds[id].img);
+            osds[id].font, osds[id].size, osds[id].text, osds[id].img,
+            osds[id].outl, osds[id].thick);
         send_and_close(req->clntFd, response, respLen);
         return;
     }
