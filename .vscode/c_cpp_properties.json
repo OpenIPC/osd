@@ -19,12 +19,6 @@
       "compilerPath": "toolchain/toolchain.hisilicon-hi3516ev200/bin/arm-openipc-linux-musleabi-gcc",
       "cStandard": "c11"
     },{
-      "name": "arm9-glibc",
-      "includePath": ["${workspaceFolder}/**"],
-      "defines": ["__arm__", "__ARM_PCS"],
-      "compilerPath": "toolchain/arm926t-gcc13-musl-3_0/bin/arm-openipc-linux-musleabi-gcc",
-      "cStandard": "c11"
-    },{
       "name": "arm9-musl3",
       "includePath": ["${workspaceFolder}/**"],
       "defines": ["__arm__", "__ARM_PCS"],
@@ -35,12 +29,6 @@
       "includePath": ["${workspaceFolder}/**"],
       "defines": ["__arm__", "__ARM_PCS"],
       "compilerPath": "toolchain/toolchain.hisilicon-hi3516cv200/bin/arm-openipc-linux-musleabi-gcc",
-      "cStandard": "c11"
-    },{
-      "name": "arm9-uclibc",
-      "includePath": ["${workspaceFolder}/**"],
-      "defines": ["__arm__", "__ARM_PCS"],
-      "compilerPath": "toolchain/toolchain.grainmedia-gm8136/bin/arm-openipc-linux-uclibcgnueabi-gcc",
       "cStandard": "c11"
     },{
       "name": "armhf-glibc",
@@ -54,18 +42,6 @@
       "defines": ["__arm__", "__ARM_PCS_VFP"],
       "compilerPath": "toolchain/toolchain.sigmastar-infinity6/bin/arm-openipc-linux-musleabihf-gcc",
       "cStandard": "c11"
-    },{
-      "name": "mips-musl",
-      "includePath": ["${workspaceFolder}/**"],
-      "defines": ["__mips__"],
-      "compilerPath": "toolchain/toolchain.ingenic-t31/bin/mipsel-openipc-linux-musl-gcc",
-      "cStandard": "c11"    
-    },{
-      "name": "riscv64-musl",
-      "includePath": ["${workspaceFolder}/**"],
-      "defines": ["__riscv", "__riscv__"],
-      "compilerPath": "toolchain/riscv64-lp64d--musl--stable-2024.05-1/bin/riscv64-linux-gcc",
-      "cStandard": "c11"    
     }
   ],
   "version": 4
