@@ -17,3 +17,6 @@ void i6c_region_deinit(void);
 void i6c_region_destroy(char handle);
 void i6c_region_init(void);
 int i6c_region_setbitmap(int handle, hal_bitmap *bitmap);
+
+void i6c_system_deinit(void);
+int i6c_system_init(void);

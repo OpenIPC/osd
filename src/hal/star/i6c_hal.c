@@ -10,6 +10,8 @@ char _i6c_venc_port = 0;
 
 void i6c_hal_deinit(void)
 {
+    i6c_system_deinit();
+
     i6c_rgn_unload(&i6c_rgn);
     i6c_sys_unload(&i6c_sys);
 }
@@ -21,6 +23,9 @@ int i6c_hal_init(void)
     if (ret = i6c_sys_load(&i6c_sys))
         return ret;
     if (ret = i6c_rgn_load(&i6c_rgn))
+        return ret;
+
+    if (ret = i6c_system_init())
         return ret;
 
     return EXIT_SUCCESS;
@@ -122,6 +127,30 @@ int i6c_region_setbitmap(int handle, hal_bitmap *bitmap)
         .size.height = bitmap->dim.height, .size.width = bitmap->dim.width };
 
     return i6c_rgn.fnSetBitmap(0, handle, &nativeBmp);
+}
+
+void i6c_system_deinit(void)
+{
+    i6c_sys.fnExit(0);
+}
+
+int i6c_system_init(void)
+{
+    int ret;
+
+    if (ret = i6c_sys.fnInit(0))
+        return ret;
+
+    printf("App built with headers v%s\n", I6C_SYS_API);
+
+    {
+        i6c_sys_ver version;
+        if (ret = i6c_sys.fnGetVersion(0, &version))
+            return ret;
+        puts(version.version);
+    }
+
+    return EXIT_SUCCESS;
 }
 
 #endif
