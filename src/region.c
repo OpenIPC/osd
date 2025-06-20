@@ -19,13 +19,25 @@ void region_fill_formatted(char* str) {
         }
         else if (str[ipos + 1] == 'B')
         {
-            ipos++;
+            char ifname[16] = {0};
             struct ifaddrs *ifaddr, *ifa;
+
+            ipos++;
+
+            if (str[ipos + 1] == ':') {
+                int j = 0;
+                ipos++;
+                while (str[ipos + 1] && str[ipos + 1] != '$' &&str[ipos + 1] != ' ' && j < (sizeof(ifname) - 1))
+                    ifname[j++] = str[++ipos];
+                ifname[j] = '\0';
+            }
+
             if (getifaddrs(&ifaddr) == -1) continue;
 
             for (ifa = ifaddr; ifa != NULL; ifa = ifa->ifa_next)
             { 
                 if (EQUALS(ifa->ifa_name, "lo")) continue;
+                if (ifname[0] && !EQUALS(ifa->ifa_name, ifname)) continue;
                 if (!ifa->ifa_addr || ifa->ifa_addr->sa_family != AF_PACKET) continue;
                 if (!ifa->ifa_data) continue;
 
@@ -77,29 +89,7 @@ void region_fill_formatted(char* str) {
         {
             ipos++;
             char s[8];
-            float t = 0.0 / 0.0;
-            switch (plat) {
-#if defined(__ARM_PCS_VFP)
-            case HAL_PLATFORM_I6:
-            case HAL_PLATFORM_I6C:
-            case HAL_PLATFORM_M6:
-            {
-                FILE* file;
-                char line[20] = {0};
-                if (file = fopen("/sys/class/mstar/msys/TEMP_R", "r")) {
-                    fgets(line, 20, file);
-                    char *remain, *parsed = strstr(line, "Temperature ");
-                    t = strtof(parsed + 12, &remain);
-                    fclose(file);
-                }
-                break;
-            }
-#elif defined(__ARM_PCS)
-            case HAL_PLATFORM_V2:  t = v2_system_readtemp(); break;
-            case HAL_PLATFORM_V3:  t = v3_system_readtemp(); break;
-            case HAL_PLATFORM_V4:  t = v4_system_readtemp(); break;
-#endif
-            }
+            float t = hal_temperature_read();
             sprintf(s, "%.1f", t);
             strcat(out, s);
             opos += strlen(s);
