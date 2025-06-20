@@ -1,13 +1,16 @@
 #include "tools.h"
 #include "types.h"
 
+#if defined(__ARM_PCS_VFP)
+#include "star/i6_hal.h"
+#include "star/i6c_hal.h"
+#include "star/m6_hal.h"
+#elif defined(__arm__) && !defined(__ARM_PCS_VFP)
 #include "hisi/v1_hal.h"
 #include "hisi/v2_hal.h"
 #include "hisi/v3_hal.h"
 #include "hisi/v4_hal.h"
-#include "star/i6_hal.h"
-#include "star/i6c_hal.h"
-#include "star/m6_hal.h"
+#endif
 
 #include <linux/version.h>
 #include <stdbool.h>
@@ -36,3 +39,4 @@ extern hal_platform plat;
 extern int series;
 
 void hal_identify(void);
+float hal_temperature_read(void);

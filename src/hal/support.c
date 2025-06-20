@@ -7,6 +7,9 @@ char family[32] = {0};
 hal_platform plat = HAL_PLATFORM_UNK;
 int series = 0;
 
+unsigned long long lastMillisTemp = 0;
+float lastReadTemp = 0.0 / 0.0;
+
 void hal_identify(void) {
     unsigned int val = 0;
     FILE *file;
@@ -96,7 +99,7 @@ void hal_identify(void) {
     }
 #endif
 
-#if defined(__ARM_PCS)
+#if defined(__arm__) && !defined(__ARM_PCS_VFP)
     if (file = fopen("/proc/iomem", "r")) {
         while (fgets(line, 200, file))
             if (strstr(line, "uart")) {
@@ -181,4 +184,47 @@ void hal_identify(void) {
     strcpy(family, "hisi-gen4");
     chnCount = V4_VENC_CHN_NUM;
 #endif
+}
+
+float hal_temperature_read(void) {
+    if (lastReadTemp != (0.0 / 0.0) && (millis() - lastMillisTemp < 5000))
+        return lastReadTemp;
+
+    lastMillisTemp = millis();
+
+    switch (plat) {
+#if defined(__ARM_PCS_VFP)
+        case HAL_PLATFORM_I6:
+        case HAL_PLATFORM_I6C:
+        case HAL_PLATFORM_M6:
+        {
+            FILE* file;
+            char line[20] = {0};
+            if (file = fopen("/sys/class/mstar/msys/TEMP_R", "r")) {
+                fgets(line, 20, file);
+                char *remain, *parsed = strstr(line, "Temperature ");
+                lastReadTemp = strtof(parsed + 12, &remain);
+                fclose(file);
+            }
+            break;
+        }
+#elif defined(__arm__) && !defined(__ARM_PCS_VFP)
+        case HAL_PLATFORM_V2: lastReadTemp = v2_system_readtemp(); break;
+        case HAL_PLATFORM_V3: lastReadTemp = v3_system_readtemp(); break;
+        case HAL_PLATFORM_V4: lastReadTemp = v4_system_readtemp(); break;
+#endif
+        default:
+            if (!access("/sys/class/thermal/thermal_zone0/temp", F_OK)) {
+                FILE* file;
+                char line[10] = {0};
+                if (file = fopen("/sys/class/thermal/thermal_zone0/temp", "r")) {
+                    fgets(line, 10, file);
+                    lastReadTemp = strtof(line, NULL) / 1000.0;
+                    fclose(file);
+                }
+            } else lastMillisTemp = UINT64_MAX;
+            break;
+    }
+
+    return lastReadTemp;
 }

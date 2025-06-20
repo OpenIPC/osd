@@ -494,8 +494,10 @@ void respond_request(struct Request *req) {
             "Content-Type: application/json;charset=UTF-8\r\n"
             "Connection: close\r\n"
             "\r\n"
-            "{\"chip\":\"%s\",\"loadavg\":[%.2f,%.2f,%.2f],\"memory\":\"%s\",\"uptime\":\"%s\"}",
-            chip, si.loads[0] / 65536.0, si.loads[1] / 65536.0, si.loads[2] / 65536.0, memory, uptime);
+            "{\"chip\":\"%s\",\"loadavg\":[%.2f,%.2f,%.2f],\"memory\":\"%s\","
+            "\"temp\":\"%.1f\u00B0C\",\"uptime\":\"%s\"}",
+            chip, si.loads[0] / 65536.0, si.loads[1] / 65536.0, si.loads[2] / 65536.0, 
+            memory, hal_temperature_read(), uptime);
         send_and_close(req->clntFd, response, respLen);
         return;
     }

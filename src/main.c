@@ -53,7 +53,7 @@ int main(int argc, char *argv[]) {
         case HAL_PLATFORM_I6:  i6_hal_init(); break;
         case HAL_PLATFORM_I6C: i6c_hal_init(); break;
         case HAL_PLATFORM_M6:  m6_hal_init(); break;
-#elif defined(__ARM_PCS)
+#elif defined(__arm__) && !defined(__ARM_PCS_VFP)
         case HAL_PLATFORM_V1:  v1_hal_init(); break;
         case HAL_PLATFORM_V2:  v2_hal_init(); break;
         case HAL_PLATFORM_V3:  v3_hal_init(); break;
@@ -78,7 +78,7 @@ int main(int argc, char *argv[]) {
         case HAL_PLATFORM_I6:  i6_hal_deinit(); break;
         case HAL_PLATFORM_I6C: i6c_hal_deinit(); break;
         case HAL_PLATFORM_M6:  m6_hal_deinit(); break;
-#elif defined(__ARM_PCS)
+#elif defined(__arm__) && !defined(__ARM_PCS_VFP)
         case HAL_PLATFORM_V1:  v1_hal_deinit(); break;
         case HAL_PLATFORM_V2:  v2_hal_deinit(); break;
         case HAL_PLATFORM_V3:  v3_hal_deinit(); break;
